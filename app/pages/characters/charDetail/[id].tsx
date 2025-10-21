@@ -1,0 +1,294 @@
+import { ScrollView, StyleSheet, View, Text, Image, Alert } from 'react-native';
+import { ActivityIndicator, Button, Card, Dialog, IconButton, Modal, Portal, useTheme,TextInput } from 'react-native-paper';
+import { AppTheme } from '@app/themes/themes';
+import { useData } from '@app/services/DataContext';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Character, Anime, AnimeApiResponse, AnimeData,JikanImages } from '@app/services/types'; 
+import { ImageCarousel } from '@components/ImageCarrousel';
+import { useState, useEffect } from 'react';
+import { useCharacterData } from '@app/hooks/useCharacterData';
+import { CharacterData } from '@app/types/CharacterData';
+import TextAreaInput from '@components/ui/textInput';
+
+export default function CharDetail() {
+    const { id } = useLocalSearchParams<{ id: string }>();
+
+  
+  const theme = useTheme() as AppTheme; 
+  const { characters, setCharacters, addChar} = useData();
+  const [creatChar, setcreatChar] = useState(false);
+  const [visible, setVisible] = useState(false);
+  
+  const { characterData, loading, error } = useCharacterData(id);
+  const char = characters.find(a => a.id.toString() == id);
+  const charImg = char?.images.split("\n").filter((uri) => uri.trim() !== "")
+  const imageUris = [characterData?.images.jpg.image_url]
+  //   const imageUrl = animeJ?.images?.jpg?.large_image_url || animeJ?.images?.jpg?.small_image_url || 'https://placehold.co/80x120/cccccc/333333?text=Sem+Capa';
+  const [formData, setFormData] = useState<Character>({
+    id:'',
+    name: characterData?.name || '',
+    description: '',
+    images: '',
+    animeId:''
+  });
+
+
+
+  useEffect(()=>{
+    setFormData({
+        id:characterData?.mal_id.toString()! ,
+        name: characterData?.name || '',
+        description: characterData?.about || '',
+        images: characterData?.images.jpg.image_url || '',
+        animeId:characterData?.anime[0].anime?.mal_id.toString()!
+    })
+  },[characterData])
+  
+  const hideDialog = () => setVisible(false);
+
+ 
+  const handleChange = (field: keyof Character, value: string ) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+
+  const headleSetChar = async (char:CharacterData)=> {
+    setcreatChar(true)
+    try{
+        await addChar(formData)
+        setcreatChar(false)
+        setVisible(false)
+        Alert.alert("Tudo Pronto!",`${formData.name} salvo no servidor`)
+
+    }catch(e){
+      setcreatChar(false)
+      setVisible(false)
+      console.log('Algo de errado não deu certo!!! - ',e)
+       Alert.alert('Algo de errado não deu certo!!! - ',`erro: ${e}`)
+    }
+}
+
+
+
+
+  if (!characterData) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <Text style={[styles.title, { color: theme.colors.onBackground }]}>
+          Carregando...
+        </Text>
+        <ActivityIndicator 
+          animating={true} 
+          size="large" 
+          color={theme.colors.primary} 
+          style={{ marginTop: 20 }} 
+        />
+      </View>
+    );
+  }
+
+  // --- Renderização dos detalhes do Anime ---
+  return (
+    <ScrollView 
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      contentContainerStyle={styles.scrollContent}>
+
+        <ImageCarousel data={ charImg! || imageUris  
+        } height={600}/>
+
+      <View style={[styles.contentCard, { backgroundColor: theme.colors.surfaceVariant }]}>
+        
+        {/* Título */}
+        <Text style={[styles.title, { color: theme.colors.onSurfaceVariant }]}>
+          {/* {characterData?.name} */}
+          {char?.name || characterData.name}
+        </Text>
+
+        {
+            characterData.name_kanji ?
+        <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
+            Nome Kanji: {characterData.name_kanji}
+        </Text>
+        : ''
+
+        }
+        {
+            characterData.nicknames.length != 0  ?
+        <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
+            Apelidos: {characterData.nicknames}
+        </Text>
+        : ''
+
+        }
+        <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
+            Favoritos: {characterData.favorites}
+        </Text>
+
+
+       
+        <Text style={[styles.sectionTitle, { color: theme.colors.onSurfaceVariant, marginTop: 20 }]}>
+          Sobre
+        </Text>
+        <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
+          { char?.description || characterData?.about || 'Nada Sobre'}
+        </Text>
+
+            
+            {/* <Button 
+              onPress={handleViewcharacters} 
+              mode="text" 
+              style={{ marginRight: 8 }}
+            >
+                Ver Personagens
+            </Button> */}
+
+
+            { 
+              !char ? 
+              (<Button onPress={()=> setVisible(!visible)} mode="contained" style={{ marginTop: 10 }}>
+                Adicionar ao catálogo
+            </Button>) : ''
+          }
+        
+      </View>
+
+
+       <Portal>
+        <Modal 
+            visible={visible} 
+            onDismiss={hideDialog} 
+            contentContainerStyle={{ backgroundColor:theme.colors.card,
+            padding: 20,
+            margin: 20,
+            borderRadius: 14}}
+            theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.8)'}}}
+            >
+              <ScrollView>
+            <Text style={{
+                color:theme.colors.secondary,
+                fontSize:24,
+                alignSelf:'center',
+
+            }}>
+                Adicionar ao Catálogo
+
+            </Text>
+
+                {/* <Text style={{ color:theme.colors.secondary, margin:5, }}>
+                    Nome:
+                </Text> */}
+             <TextInput
+             label="Nome"
+                value={formData.name}
+                 mode="outlined"
+                onChangeText={(text) => handleChange('name', text)}
+                style={{ marginBottom: 15,
+                    flex:1,
+                    color:theme.colors.secondary,
+                    borderRadius: 12,
+                    backgroundColor: theme.colors.surfaceVariant,}}
+                    />
+{/* 
+                    <Text style={{ color:theme.colors.secondary, margin:5, }}>
+                        Sobre:
+                    </Text>
+                     */}
+
+                 
+             <TextInput
+             label="Sobre"
+                value={formData.description}
+                onChangeText={(text) => handleChange('description', text)}
+                multiline
+                 mode="outlined"
+                numberOfLines={28}
+                style={{ marginBottom: 15,
+                    borderRadius: 12,
+                    color:theme.colors.secondary,
+                    backgroundColor: theme.colors.surfaceVariant,}}
+                    />
+
+          </ScrollView>
+          {!creatChar ?
+
+              <Button onPress={()=>headleSetChar(characterData)} mode="contained" style={{ marginTop: 10 }}>
+                Adicionar
+            </Button>
+            :
+             <ActivityIndicator animating={true} color={theme.colors.primary} />
+            }
+        </Modal>
+
+</Portal>
+
+
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scrollContent: {
+    paddingBottom: 40,
+    alignItems: 'center',
+  },
+  coverImage: {
+    width: '100%',
+    aspectRatio: 4 / 5, // Ajuste para uma proporção de capa de anime
+    marginBottom: -50, // Permite que o card de conteúdo suba um pouco
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  contentCard: {
+    width: '95%',
+    borderRadius: 20,
+    padding: 20,
+    marginTop: -40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 8,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  ratingText: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  genresContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 20,
+  },
+  genrePill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 10,
+  },
+  descriptionText: {
+    fontSize: 16,
+    textAlign: 'justify',
+  },
+});

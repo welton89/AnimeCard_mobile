@@ -1,0 +1,138 @@
+
+import React, { useRef } from 'react';
+import {
+  View,
+  Image,
+  FlatList,
+  Dimensions,
+  StyleSheet,
+  ListRenderItem,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from 'react-native';
+import { useTheme } from 'react-native-paper'; 
+
+// --- Tipagem do Tema ---
+// Importe a tipagem do seu tema para ter acesso às cores personalizadas
+import { useThemeToggle } from '@app/contexts/ThemeContext'; // Ajuste o caminho se necessário!
+import { AppTheme } from '@app/themes/themes';
+   const { isDark, toggleTheme } = useThemeToggle();
+
+// --- Constantes ---
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const ITEM_WIDTH = SCREEN_WIDTH;
+
+interface ImageCarouselProps {
+  data: string[];
+  height?: number;
+}
+
+// --- Componentes Auxiliares ---
+
+const DotsIndicator: React.FC<{
+  data: string[];
+  currentIndex: number;
+}> = ({ data, currentIndex }) => {
+  // 💡 Usa o useTheme para obter as cores ativas do tema (claro ou escuro)
+  const theme = useTheme() as AppTheme; 
+  // Define cores com base no tema
+  const activeColor = theme.colors.primary; 
+  const inactiveColor = '#626262ff';
+  return (
+    <View style={styles.indicatorContainer}>
+      {data.map((_, index) => (
+        <View
+          key={index.toString()}
+          style={[
+            styles.dot,
+            { backgroundColor: index === currentIndex ? activeColor : inactiveColor },
+            index === currentIndex && styles.activeDot, // Mantém a customização de tamanho se existir
+          ]}
+        />
+      ))}
+    </View>
+  );
+};
+
+// --- Componente Principal ---
+
+export const ImageCarousel: React.FC<ImageCarouselProps> = ({
+  data,
+  height = 200,
+}) => {
+  const scrollRef = useRef<FlatList<string>>(null);
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+  
+
+  const handleScroll = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const newIndex = Math.round(contentOffsetX / ITEM_WIDTH);
+
+    if (newIndex !== currentIndex) {
+      setCurrentIndex(newIndex);
+    }
+  };
+
+
+  const renderItem: ListRenderItem<string> = ({ item: uri }) => (
+    <View style={{ width: ITEM_WIDTH, height: height }}>
+      <Image
+        source={{ uri: uri }}
+        style={styles.image}
+        resizeMode="cover"
+      />
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        ref={scrollRef as React.RefObject<FlatList<string>>} 
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={(_, index) => index.toString()} // Usando '_' para item não usado
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        pagingEnabled
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        getItemLayout={(_, index) => ({
+          length: ITEM_WIDTH,
+          offset: ITEM_WIDTH * index,
+          index,
+        })}
+      />
+      {/* Condicional mais limpa para mostrar o indicador */}
+      { data.length > 1 && <DotsIndicator data={data} currentIndex={currentIndex} /> }
+     
+    </View>
+  );
+};
+
+
+const styles = StyleSheet.create({
+  container: { width: SCREEN_WIDTH, },
+  image: { flex: 1, width: '100%', height: '100%', },
+  indicatorContainer: { 
+    flexDirection: 'row', 
+    justifyContent: 'center', 
+    marginTop: 10, 
+    // Garante que o indicador fique acima da tela, se o carousel estiver na base
+    position: 'absolute', 
+    bottom: 10,
+    width: '100%', 
+  },
+  dot: { 
+    height: 8, 
+    width: 8, 
+    borderRadius: 4, 
+    marginHorizontal: 4, 
+  },
+  activeDot: { 
+    width: 20, 
+    height: 10, 
+    borderRadius: 5, 
+ },
+});
