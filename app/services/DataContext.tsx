@@ -67,9 +67,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 // ----------------------------------------------------------------------
   const addAnime = useCallback(async (newAnime: Anime) => {
     try {
-      console.log('api_____________ ______________',settings.API)
       if (settings.API != ''){
-
         const createdAnime = await api.createAnime(newAnime);
         AnimeRepository.set(newAnime)
          setAnimes(prevAnimes => [...prevAnimes, newAnime]);
@@ -82,7 +80,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       console.error("Falha ao adicionar anime no servidor.", error);
       throw error; // Propaga o erro para o componente que chamou
     }
-  }, []);
+  }, [settings]);
 
 
   const delAnime = useCallback(async (id: string) => {
@@ -108,11 +106,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [settings]);
 
 
-
   const addChar = useCallback(async (newChar: Character) => {
     try {
       if (settings.API != ''){
         const createdAnime = await api.createCharacter(newChar);
+        CharRepository.set(newChar)
         setCharacters(prevCharacters => [...prevCharacters, newChar]);
 
       }else{
@@ -134,9 +132,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 // ----------------------------------------------------------------------
 
   // Chama a API apenas na montagem do Provider
-  // useEffect(() => {
-  //   fetchData();
-  // }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [settings]);
 
   // Use useMemo para evitar re-renders desnecessários
   const contextValue = useMemo(() => ({
@@ -149,18 +147,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }), [characters, animes, loading, addAnime, addChar, delAnime, settings]); // Adicione 'addAnime' como dependência
 
 
-  if (!isInitialized || loading) {
-     return (
+//   if (!isInitialized || loading) {
+//      return (
 
-       <>
-     <ActivityIndicator animating={true} style={{width:'100%',height:'100%'}} size={'large'} color={MD2Colors.red800}/>
-     <Text style={{color:'black'}}>
-Carregando dados do Servidor
-     </Text>
-     </>
-      )
-    //  return null; // Pode ser um ActivityIndicator ou uma Splash Screen
-}
+//        <>
+//      <ActivityIndicator animating={true} style={{width:'100%',height:'100%'}} size={'large'} color={MD2Colors.red800}/>
+//      <Text style={{color:'black'}}>
+// Carregando dados do Servidor
+//      </Text>
+//      </>
+//       )
+//     //  return null; // Pode ser um ActivityIndicator ou uma Splash Screen
+// }
 
 
 

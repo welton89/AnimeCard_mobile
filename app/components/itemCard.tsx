@@ -1,5 +1,5 @@
 
-import { View, Dimensions, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Dimensions, StyleSheet, Alert, ScrollView, TouchableOpacity } from 'react-native';
 import { Card, Text, IconButton, useTheme, Avatar, Modal, Portal, Button} from 'react-native-paper';
 
 import { Character, Anime } from '../services/types'; 
@@ -28,9 +28,9 @@ export function ItemCard({ item }: ItemCardProps) {
     ? undefined 
     : animes.find(c => {
         const char = item as Character;
-        return c.id === char.animeId;
+        return c.id.toString() === char.animeId.toString();
     });
-  const animeImg = isAnime ? [] : anime?.images.split("\n").filter((uri) => uri.trim() !== "");
+  const animeImg = anime == undefined ? [] : anime?.images.split("\n").filter((uri) => uri.trim() !== "");
   const imageUris = item.images == null ? [] : item.images.split("\n").filter((uri) => uri.trim() !== "") || ''
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
@@ -48,11 +48,16 @@ export function ItemCard({ item }: ItemCardProps) {
     
     // Usamos Avatar.Image do Paper
     return (
+      <TouchableOpacity
+      onPress={()=>{router.push(`/pages/animes/animeDetail/${anime?.id}`)}}
+      >
+
       <Avatar.Image
         size={40} // Tamanho fixo para o avatar
         source={{ uri: animeImg[0] }}
         style={{ backgroundColor: theme.colors.surfaceDisabled }}
-      />
+        />
+        </TouchableOpacity>
     );
   };
 
@@ -63,7 +68,6 @@ export function ItemCard({ item }: ItemCardProps) {
     }
     else if(!isAnime){
       router.push(`/pages/characters/charDetail/${item.id}`);
-      console.log(`id do char: ${item.id}`)
     } else {
       Alert.alert('Erro', 'ID do Anime não encontrado para navegação.');
     }
@@ -158,7 +162,7 @@ export function ItemCard({ item }: ItemCardProps) {
       <View style={styles.headerContainer}>
         <Card.Title
           title={item.name}
-          subtitle={anime?.name}
+          subtitle={anime?.name || ''}
           left={renderAvatar}
           // titleStyle e subtitleStyle para aplicar as quebras de linha/fontes
           titleStyle={styles.title}
@@ -183,14 +187,14 @@ export function ItemCard({ item }: ItemCardProps) {
       <Card.Actions style={styles.cardActions}>
 
         <IconButton 
-          icon="cards-heart" 
+          icon={ "youtube-tv"} 
           onPress={() => { /* Ação de Favorito */ }} 
           style={styles.icons} 
           size={30} // Ajuste o tamanho
           iconColor={ imageUris.length == 3 ? theme.colors.primary : theme.colors.surfaceDisabled}
         /> 
 
-     
+    
         
         {/* Botão de Modal (Exemplo de nova ação) */}
         <Button onPress={handleViewMore} mode="text" style={{ marginLeft: 8 }}>

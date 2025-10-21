@@ -241,6 +241,7 @@ export const getAllCharacter = async (): Promise<Character[]> => {
       name: row.name,
       description: row.description,
       images: row.images,
+      animeId: row.animeId
     })) as Character[];
 
   }

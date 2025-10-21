@@ -7,7 +7,6 @@ import { Character, Anime, AnimeApiResponse, AnimeData,JikanImages, Aired, Trail
 import { ImageCarousel } from '@components/ImageCarrousel';
 import { useState, useEffect } from 'react';
 import WebViewYoutubeModal from '@components/videoModal';
-import { AnimeRepository } from '@app/services/Database/SettingsRepository';
 
 
 
@@ -29,6 +28,7 @@ export default function AnimeDetail() {
   const hideDialog = () => setVisible(false);
   const hideVideo = () => setModalVideo(false);
   const hideDialogDel = () => setVisibleDel(false);
+  console.log('status do anime',anime?.status)
  
 
 async function fetchAnimeById(id: string): Promise<AnimeData | null> {
@@ -110,13 +110,11 @@ useEffect(()=>{
 
     try{
       await addAnime(novoAnime);
-      // setAnimes(prevAnimes => [...prevAnimes, novoAnime]);
       setcreatAnime(false)
       setVisible(false)
       Alert.alert("Tudo Pronto!",`${novoAnime.name} foi adicionado ao seu servidor`)
 
     }catch(e){
-     
       setcreatAnime(false)
       setVisible(false)
       Alert.alert("ALgo de errado não tá certo! - "+e)
@@ -126,7 +124,7 @@ useEffect(()=>{
 
 const headleDel = async () => {
   const title = anime?.name
-  delAnime(id)
+  await delAnime(id)
   hideDialogDel();
   // router.back();
     Alert.alert("Tudo Pronto!",`${title} apagado`)
@@ -224,9 +222,6 @@ const headleDel = async () => {
           {anime?.description || animeJ?.synopsis || 'Nenhuma sinopse detalhada fornecida.'}
         </Text>
 
-            
-
-
             { 
               !anime ? 
 
@@ -296,10 +291,9 @@ const headleDel = async () => {
     </Portal>
 
 
-<WebViewYoutubeModal videoUrl={animeJ?.trailer?.embed_url || ''}
- isVisible={modalVideo} 
- onClose={hideVideo }></WebViewYoutubeModal>
-
+    <WebViewYoutubeModal videoUrl={animeJ?.trailer?.embed_url || ''}
+    isVisible={modalVideo} 
+    onClose={hideVideo }></WebViewYoutubeModal>
 
 
     </ScrollView>
