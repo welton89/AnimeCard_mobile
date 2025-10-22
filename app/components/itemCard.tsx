@@ -1,15 +1,15 @@
 
 import { View, Dimensions, StyleSheet, Alert, ScrollView, TouchableOpacity } from 'react-native';
 import { Card, Text, IconButton, useTheme, Avatar, Modal, Portal, Button} from 'react-native-paper';
+import { useState } from 'react';
+import { router } from 'expo-router'; //
+   
 
 import { Character, Anime } from '../services/types'; 
 import { useData } from '../services/DataContext'; 
 import { ImageCarousel } from './ImageCarrousel'; 
 import { MenuOpcoes } from './MenuOpcoes'; 
 import { AppTheme } from '@app/themes/themes';
-import { useState } from 'react';
-import { router, useRouter } from 'expo-router'; //
-   
 
 
 const WIDTH = Dimensions.get('window').width;
@@ -40,7 +40,6 @@ export function ItemCard({ item }: ItemCardProps) {
   const handleCloseModal = () => setModalVisible(false);
 
 
-  // Renderização do Avatar (Substituindo MUI Avatar e CardMedia aninhados)
   const renderAvatar = () => {
     if (isAnime || !animeImg || animeImg.length === 0) {
       return null;

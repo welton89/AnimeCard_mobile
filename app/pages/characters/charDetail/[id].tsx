@@ -8,19 +8,21 @@ import { ImageCarousel } from '@components/ImageCarrousel';
 import { useState, useEffect } from 'react';
 import { useCharacterData } from '@app/hooks/useCharacterData';
 import { CharacterData } from '@app/types/CharacterData';
-import TextAreaInput from '@components/ui/textInput';
+import {CreateUpdateModal} from '@app/components/createUpdateModal'
 
 export default function CharDetail() {
     const { id } = useLocalSearchParams<{ id: string }>();
 
   
   const theme = useTheme() as AppTheme; 
-  const { characters, setCharacters, addChar} = useData();
+  const { characters, setCharacters, addChar, delChar} = useData();
   const [creatChar, setcreatChar] = useState(false);
   const [visible, setVisible] = useState(false);
+    const [visibleDel, setVisibleDel] = useState(false);
+
   
   const { characterData, loading, error } = useCharacterData(id);
-  const char = characters.find(a => a.id.toString() == id);
+  const char:Character  = characters.find(a => a.id.toString() == id)!;
   const charImg = char?.images.split("\n").filter((uri) => uri.trim() !== "")
   const imageUris = [characterData?.images.jpg.image_url]
   //   const imageUrl = animeJ?.images?.jpg?.large_image_url || animeJ?.images?.jpg?.small_image_url || 'https://placehold.co/80x120/cccccc/333333?text=Sem+Capa';
@@ -68,6 +70,15 @@ export default function CharDetail() {
     }
 }
 
+
+const headleDel = async () => {
+  const title = char?.name
+  await delChar(id)
+  setVisibleDel(false);
+  // router.back();
+    Alert.alert("Tudo Pronto!",`${title} apagado`)
+
+};
 
 
 
@@ -147,13 +158,36 @@ export default function CharDetail() {
               !char ? 
               (<Button onPress={()=> setVisible(!visible)} mode="contained" style={{ marginTop: 10 }}>
                 Adicionar ao catálogo
-            </Button>) : ''
+            </Button>) 
+            : 
+              (
+                <View style={{ flex: 1, flexDirection: 'row', margin: 8 ,gap:10, justifyContent:'space-between'}}>
+              <Button 
+              onPress={() => setVisible(!visible)}
+              mode= 'contained'
+              style={{ width: '65%',  margin: 8 }}>
+               Editar
+                </Button>
+              <Button 
+              onPress={() => setVisibleDel(!visibleDel)}
+              mode= 'contained' textColor='#ffff'
+              style={{ width:'30%', margin: 8 , backgroundColor:'red',}}>
+               Excluir
+                </Button>
+                </View>
+                ) 
           }
         
       </View>
 
-
-       <Portal>
+<CreateUpdateModal 
+        externalVisible={visible}
+        type={char ? 'char' : 'charApi'}
+        item={!char ? characterData :char}
+        operation={char ? 'update' : 'create'} 
+        onClose={hideDialog } 
+ />
+       {/* <Portal>
         <Modal 
             visible={visible} 
             onDismiss={hideDialog} 
@@ -174,9 +208,7 @@ export default function CharDetail() {
 
             </Text>
 
-                {/* <Text style={{ color:theme.colors.secondary, margin:5, }}>
-                    Nome:
-                </Text> */}
+          
              <TextInput
              label="Nome"
                 value={formData.name}
@@ -188,11 +220,7 @@ export default function CharDetail() {
                     borderRadius: 12,
                     backgroundColor: theme.colors.surfaceVariant,}}
                     />
-{/* 
-                    <Text style={{ color:theme.colors.secondary, margin:5, }}>
-                        Sobre:
-                    </Text>
-                     */}
+
 
                  
              <TextInput
@@ -219,7 +247,21 @@ export default function CharDetail() {
             }
         </Modal>
 
-</Portal>
+</Portal> */}
+
+   <Portal>
+      <Dialog visible={visibleDel} onDismiss={()=>setVisibleDel(!visibleDel)}>
+        <Dialog.Icon icon="alert" />
+        <Dialog.Title style={styles.title}>Excluir</Dialog.Title>
+        <Dialog.Content>
+          <Text >Tá certo diiso?</Text>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={() => setVisibleDel(!visibleDel)}>Cancel</Button>
+          <Button onPress={headleDel}>Apagar</Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
 
 
     </ScrollView>

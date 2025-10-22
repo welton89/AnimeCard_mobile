@@ -260,7 +260,7 @@ const headleDel = async () => {
           <Text >Tá certo diiso?</Text>
         </Dialog.Content>
         <Dialog.Actions>
-          <Button onPress={() => console.log('Cancel')}>Cancel</Button>
+          <Button onPress={() => setVisibleDel(!visibleDel)}>Cancel</Button>
           <Button onPress={headleDel}>Apagar</Button>
         </Dialog.Actions>
       </Dialog>
