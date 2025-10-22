@@ -28,11 +28,6 @@ export const CreateUpdateModal = ({externalVisible,type, item, operation, onClos
     const [internalVisible, setInternalVisible] = useState(false); // Inicia como false
     const [loading, setloading] = useState(false); // Inicia como false
 
-//  const char:Character | undefined = type == 'char' ? (item as Character) : undefined 
-//  const charApi:JikanCharacter | undefined = type == 'charApi' ? (item as JikanCharacter) : undefined 
-//  const anime:Anime | undefined = type == 'anime' ? (item as Anime) : undefined 
-//  const animeApi:AnimeData | undefined = type == 'animeApi' ? (item as AnimeData) : undefined 
-
 
     const initialData = useMemo(() => {
     if (!item) return {}; 
@@ -61,8 +56,9 @@ export const CreateUpdateModal = ({externalVisible,type, item, operation, onClos
             return {
                 id: charApi.mal_id,
                 name: charApi.name,
-                images: charApi.images,
+                images: charApi.images.jpg.large_image_url || charApi.images.jpg.image_url,
                 description: charApi.about,
+                animeId: charApi.anime[0],
                 status: '' 
             };
         case 'animeApi':
@@ -90,7 +86,9 @@ const [formData, setFormData] = useState({
 });
 
 
-
+  const handleChange = (field: keyof Character, value: string ) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   useEffect(() => {
     setInternalVisible(externalVisible);
@@ -102,8 +100,9 @@ const [formData, setFormData] = useState({
     setInternalVisible(false); // Fecha o estado interno
     onClose(false);            // ⭐️ Notifica o componente pai para atualizar seu estado
   };
+
     function headleSetAnime() {
-        Alert.alert('Criou',)
+        Alert.alert('Criou, Anime',)
         
     }
     
@@ -128,7 +127,7 @@ const [formData, setFormData] = useState({
       console.log('Algo de errado não deu certo!!! - ',e)
        Alert.alert('Algo de errado não deu certo!!! - ',`erro: ${e}`)
     }
-        Alert.alert('Criou',)
+        Alert.alert('Criou',formData.name!)
         
     }
     
@@ -174,7 +173,7 @@ const [formData, setFormData] = useState({
              label="Nome"
              value={ formData.name!}
              mode="outlined"
-            //  onChangeText={(text) => handleChange('name', text)}
+             onChangeText={(text) => handleChange('name', text)}
              style={{ marginBottom: 15,
                 flex:1,
                 color:theme.colors.secondary,
@@ -186,7 +185,7 @@ const [formData, setFormData] = useState({
              <TextInput
              label="Sobre"
              value={formData.description!}
-            //  onChangeText={(text) => handleChange('description', text)}
+             onChangeText={(text) => handleChange('description', text)}
              multiline
              mode="outlined"
              numberOfLines={28}
@@ -200,7 +199,7 @@ const [formData, setFormData] = useState({
           {operation == 'create' ?
 
             <Button onPress={()=>
-                                type == 'char' ?
+                                type == 'char' || 'charApi' ?
                                 headleSetChar() : 
                                 headleSetAnime()
                             } mode="contained" style={{ marginTop: 10 }}>

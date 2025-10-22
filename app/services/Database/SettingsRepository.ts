@@ -144,9 +144,9 @@ export const saveAnime = async (anime: Anime): Promise<void> => {
   await database.runAsync(query, [
     id,
     name,
-    description || null,
-    images || null,
-    status || 'Desconhecido',
+    description || '',
+    images || '',
+    status || 'list',
   ]);
 };
 

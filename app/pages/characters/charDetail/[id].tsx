@@ -18,7 +18,7 @@ export default function CharDetail() {
   const { characters, setCharacters, addChar, delChar} = useData();
   const [creatChar, setcreatChar] = useState(false);
   const [visible, setVisible] = useState(false);
-    const [visibleDel, setVisibleDel] = useState(false);
+  const [visibleDel, setVisibleDel] = useState(false);
 
   
   const { characterData, loading, error } = useCharacterData(id);
@@ -36,39 +36,39 @@ export default function CharDetail() {
 
 
 
-  useEffect(()=>{
-    setFormData({
-        id:characterData?.mal_id.toString()! ,
-        name: characterData?.name || '',
-        description: characterData?.about || '',
-        images: characterData?.images.jpg.image_url || '',
-        animeId:characterData?.anime[0].anime?.mal_id.toString()!
-    })
-  },[characterData])
+  // useEffect(()=>{
+  //   setFormData({
+  //       id:characterData?.mal_id.toString()! ,
+  //       name: characterData?.name || '',
+  //       description: characterData?.about || '',
+  //       images: characterData?.images.jpg.image_url || '',
+  //       animeId:characterData?.anime[0].anime?.mal_id.toString()!
+  //   })
+  // },[characterData])
   
   const hideDialog = () => setVisible(false);
 
  
-  const handleChange = (field: keyof Character, value: string ) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  // const handleChange = (field: keyof Character, value: string ) => {
+  //   setFormData(prev => ({ ...prev, [field]: value }));
+  // };
 
 
-  const headleSetChar = async (char:CharacterData)=> {
-    setcreatChar(true)
-    try{
-        await addChar(formData)
-        setcreatChar(false)
-        setVisible(false)
-        Alert.alert("Tudo Pronto!",`${formData.name} salvo no servidor`)
+//   const headleSetChar = async (char:CharacterData)=> {
+//     setcreatChar(true)
+//     try{
+//         await addChar(formData)
+//         setcreatChar(false)
+//         setVisible(false)
+//         Alert.alert("Tudo Pronto!",`${formData.name} salvo no servidor`)
 
-    }catch(e){
-      setcreatChar(false)
-      setVisible(false)
-      console.log('Algo de errado não deu certo!!! - ',e)
-       Alert.alert('Algo de errado não deu certo!!! - ',`erro: ${e}`)
-    }
-}
+//     }catch(e){
+//       setcreatChar(false)
+//       setVisible(false)
+//       console.log('Algo de errado não deu certo!!! - ',e)
+//        Alert.alert('Algo de errado não deu certo!!! - ',`erro: ${e}`)
+//     }
+// }
 
 
 const headleDel = async () => {
