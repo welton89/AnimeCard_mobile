@@ -39,6 +39,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
+      const [animesData, charactersData] = await Promise.all([
+           AnimeRepository.getAll(),
+           CharRepository.getAll(),
+          ]);
+          setAnimes(animesData);
+          setCharacters(charactersData); 
       
       // Checa o modo de operação (API ou Local DB)
       if (settings.API !== ''){
@@ -49,13 +55,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setAnimes(animesData);
         setCharacters(charactersData); 
       }else{
+        console.log('dados locais')
         // Se estiver no modo local, chama o repositório DB (que depende da inicialização ter sido feita no useSettingsStore)
-        const [animesData, charactersData] = await Promise.all([
-           AnimeRepository.getAll(),
-           CharRepository.getAll(),
-          ]);
-          setAnimes(animesData);
-          setCharacters(charactersData); 
+        // const [animesData, charactersData] = await Promise.all([
+        //    AnimeRepository.getAll(),
+        //    CharRepository.getAll(),
+        //   ]);
+        //   setAnimes(animesData);
+        //   setCharacters(charactersData); 
       }
     } catch (error) {
       console.error("Failed to fetch data", error);

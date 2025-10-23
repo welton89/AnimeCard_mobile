@@ -40,6 +40,7 @@ export default function PersonagemPage() {
                           }
                         })
                   }
+                  extraData={characters}
                   renderItem={renderItem}
                   keyExtractor={(item) => item.id.toString()}
   

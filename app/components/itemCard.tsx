@@ -20,7 +20,7 @@ interface ItemCardProps {
 
 
 export function ItemCard({ item }: ItemCardProps) {
-  const { animes } = useData();
+  const { animes, characters } = useData();
   const theme = useTheme() as AppTheme; 
  
   const isAnime = 'animeId' in item ? false : true;
@@ -32,12 +32,7 @@ export function ItemCard({ item }: ItemCardProps) {
     });
   const animeImg = anime == undefined ? [] : anime?.images.split("\n").filter((uri) => uri.trim() !== "");
   const imageUris = item.images == null ? [] : item.images.split("\n").filter((uri) => uri.trim() !== "") || ''
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-
-
-  // const handleOpenModal = () => setModalVisible(true);
-  const handleCloseModal = () => setModalVisible(false);
 
 
   const renderAvatar = () => {
@@ -134,42 +129,28 @@ export function ItemCard({ item }: ItemCardProps) {
 });
 
   return (
-    <>
-   
-    <Portal>
-        <Modal 
-            visible={modalVisible} 
-            onDismiss={handleCloseModal} 
-            contentContainerStyle={styles.modalContainer}
-            theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.8)'}}}
-            >
-              <ScrollView>
-            <Text style={{ margin: 2, color: theme.colors.onSurface }}>
-                {item.description}
-            </Text>
-          </ScrollView>
-            <Button onPress={handleCloseModal} mode="contained" style={{ marginTop: 10 }}>
-                Fechar
-            </Button>
-        </Modal>
-    </Portal>
 
-    {/* 2. Card Principal */}
     <Card style={[styles.cardContainer]}>
       
       {/* 3. CardHeader (Substituído por Card.Title e MenuOpcoes) */}
       <View style={styles.headerContainer}>
         <Card.Title
-          title={item.name}
+          title={
+
+            animes.find(a => a.id.toString() === item.id.toString())?.name 
+            ||
+            characters.find(c => c.id.toString() === item.id.toString())?.name
+            
+            // item.name
+          
+          }
           subtitle={anime?.name || ''}
           left={renderAvatar}
           // titleStyle e subtitleStyle para aplicar as quebras de linha/fontes
           titleStyle={styles.title}
           subtitleStyle={styles.subTitle}
         />
-        <View style={styles.menuAction}>
-             <MenuOpcoes/>
-        </View>
+      
       </View>
       
       {/* 4. CardMedia (Usando seu ImageCarousel) */}
@@ -205,7 +186,7 @@ export function ItemCard({ item }: ItemCardProps) {
 
 
     </Card>
-    </>
+ 
   );
 }
 

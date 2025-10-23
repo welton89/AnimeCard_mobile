@@ -44,6 +44,7 @@ export default  function AnimePage() {
                           }
                         })
                   }
+                  extraData={animes}
                   renderItem={renderItem}
                   keyExtractor={(item) => item.id.toString()}
   

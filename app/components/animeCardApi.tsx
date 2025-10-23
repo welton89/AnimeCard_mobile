@@ -1,6 +1,6 @@
 import { AnimeData, Anime } from "@app/services/types";
 import { memo, useState } from "react";
-import { View, Text,Image, StyleSheet, Dimensions, Alert } from "react-native";
+import { View, Text,Image, StyleSheet, Dimensions, Alert, TouchableOpacity } from "react-native";
 import {  ActivityIndicator, Button, Dialog, IconButton, Portal, useTheme} from "react-native-paper";
 import { AppTheme } from '@app/themes/themes';
 import { useData } from '@app/services/DataContext';
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
 
 
 
-      const handleViewCharacters = () => {
+      const handleViewAnime = () => {
         if (anime.mal_id) {
     
           // 🎯 Rota configurada: /characters/[id].tsx
@@ -115,12 +115,13 @@ const styles = StyleSheet.create({
 
 
   return (
+      <TouchableOpacity onPress={handleViewAnime} activeOpacity={0.6}>
     <View style={styles.cardContainer}>
       <Image
         style={styles.image}
         source={{ uri: imageUrl }}
         resizeMode="cover"
-      />
+        />
       <View style={styles.infoContainer}>
         <Text style={styles.primaryTitle} numberOfLines={2} ellipsizeMode="tail">
           {anime.title_english || anime.title}
@@ -140,19 +141,18 @@ const styles = StyleSheet.create({
         
         {/* Renderiza a avaliação SOMENTE se os dados estiverem disponíveis (Score / Scored_by) */}
         {hasScore ? (
-            <View style={styles.ratingContainer}>
+          <View style={styles.ratingContainer}>
                 <Text style={styles.ratingText}>⭐ {anime.score!.toFixed(2)}</Text>
                 <Text style={styles.voteText}>({anime.scored_by!.toLocaleString()} votos)</Text>
-                <Button onPress={handleViewCharacters} mode="text" style={{ marginLeft: 8 }}>
-                    Ver Mais
-                </Button>
             </View>
         ) : (
-            <Text style={styles.noRatingText}>Sem avaliação disponível</Text>
+          <Text style={styles.noRatingText}>Sem avaliação disponível</Text>
         )}
       </View>
     
     </View>
+
+        </TouchableOpacity>
   );
 });
 

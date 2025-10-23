@@ -2,7 +2,7 @@
 import { Anime, AnimeData, Character } from '@app/services/types';
 import { CharacterData } from '@app/types/CharacterData';
 
-import { Alert, ScrollView, Text } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
 import { ActivityIndicator, Button, Card, Dialog, IconButton, Modal, Portal, useTheme,TextInput } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
 import { useEffect, useMemo, useState } from 'react';
@@ -201,30 +201,36 @@ const [formData, setFormData] = useState({
 
         
         
-        <Portal>
+    <Portal>
         <Modal 
             visible={internalVisible} 
             onDismiss={handleDismiss} 
             contentContainerStyle={{ backgroundColor:theme.colors.card,
                 padding: 20,
+                flex:1,
                 margin: 20,
-                borderRadius: 14}}
+                borderRadius: 14
+            }}
                 theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.8)'}}}
                 >
-              <ScrollView>
-            <Text style={{
-                color:theme.colors.secondary,
-                fontSize:24,
-                alignSelf:'center',
-                
-            }}>
-                Adicionar ao Catálogo
+            <KeyboardAvoidingView
+                style={{ flex: 1,}}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Ajuste o offset conforme necessário
+                >
 
-            </Text>
+                <ScrollView style={{flex:1,}}>
+                    <Text style={{
+                        color:theme.colors.secondary,
+                        fontSize:24,
+                        alignSelf:'center',
+                        
+                        }}>
+                        Adicionar ao Catálogo
 
-                {/* <Text style={{ color:theme.colors.secondary, margin:5, }}>
-                    Nome:
-                    </Text> */}
+                    </Text>
+
+            
              <TextInput
              label="Nome"
              value={ formData.name!}
@@ -266,35 +272,36 @@ const [formData, setFormData] = useState({
                 />
 
           </ScrollView>
+          </KeyboardAvoidingView>
           {operation == 'create' ?
 
-            <Button onPress={()=>
-                                type == 'charApi' ?
-                                headleSetChar() :
-                            
-                                headleSetAnime() 
-                            } mode="contained" style={{ marginTop: 10 }}>
-                              {
-                                !loading ?
-                                'Adicionar' :
-                                 <ActivityIndicator animating={true} color={theme.colors.background} />
-                              }  
+            <Button 
+                onPress={()=>
+                    type == 'charApi' ?
+                    headleSetChar() :
+                    headleSetAnime() 
+                    } 
+                mode="contained" style={{ marginTop: 10 }}>
+                    {!loading ? 'Adicionar' : 'Adicionando' }  
             </Button>
 
                     :
-            <Button onPress={()=>
-                                type == 'char' ?
-                                headleUpdateChar() : 
-                                headleUpdateAnime()
-                            } mode="contained" style={{ marginTop: 10 }}>
-                              {
-                                !loading ?
-                                'Salvar' :
-                                 <ActivityIndicator animating={true} color={theme.colors.background} />
-                              }  
+            <Button 
+                disabled={loading}
+                onPress={()=>
+                        type == 'char' ?
+                        headleUpdateChar() : 
+                        headleUpdateAnime()
+                        }
+                mode="contained" style={{ marginTop: 10 }}>
+                    {!loading ? 'Salvar' : 'Salvando...' }  
+                            
             </Button>
-
-            
+            }
+            {
+                loading ?
+                        <ActivityIndicator animating={true} color={theme.colors.primary} />
+                        : null
             }
         </Modal>
 
