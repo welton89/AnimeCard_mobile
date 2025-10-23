@@ -7,6 +7,7 @@ import { Character, Anime, AnimeApiResponse, AnimeData,JikanImages, Aired, Trail
 import { ImageCarousel } from '@components/ImageCarrousel';
 import { useState, useEffect } from 'react';
 import WebViewYoutubeModal from '@components/videoModal';
+import { CreateUpdateModal } from '@components/createUpdateModal';
 
 
 
@@ -251,6 +252,18 @@ const headleDel = async () => {
                 ) 
           }
         
+
+<CreateUpdateModal 
+        externalVisible={visible}
+        type={anime ? 'anime' : 'animeApi'}
+        item={!anime ? animeJ! :anime}
+        operation={anime ? 'update' : 'create'} 
+        onClose={hideDialog } 
+ />
+
+
+
+
       </View>
         <Portal>
       <Dialog visible={visibleDel} onDismiss={hideDialogDel}>
@@ -266,7 +279,7 @@ const headleDel = async () => {
       </Dialog>
     </Portal>
 
-          <Portal>
+          {/* <Portal>
     <Dialog 
       visible={visible} 
       onDismiss={hideDialog} 
@@ -288,7 +301,7 @@ const headleDel = async () => {
         </Dialog.Actions>
         }
       </Dialog>
-    </Portal>
+    </Portal> */}
 
 
     <WebViewYoutubeModal videoUrl={animeJ?.trailer?.embed_url || ''}

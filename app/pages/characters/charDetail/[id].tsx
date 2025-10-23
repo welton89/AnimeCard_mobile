@@ -35,40 +35,10 @@ export default function CharDetail() {
   });
 
 
-
-  // useEffect(()=>{
-  //   setFormData({
-  //       id:characterData?.mal_id.toString()! ,
-  //       name: characterData?.name || '',
-  //       description: characterData?.about || '',
-  //       images: characterData?.images.jpg.image_url || '',
-  //       animeId:characterData?.anime[0].anime?.mal_id.toString()!
-  //   })
-  // },[characterData])
   
   const hideDialog = () => setVisible(false);
 
  
-  // const handleChange = (field: keyof Character, value: string ) => {
-  //   setFormData(prev => ({ ...prev, [field]: value }));
-  // };
-
-
-//   const headleSetChar = async (char:CharacterData)=> {
-//     setcreatChar(true)
-//     try{
-//         await addChar(formData)
-//         setcreatChar(false)
-//         setVisible(false)
-//         Alert.alert("Tudo Pronto!",`${formData.name} salvo no servidor`)
-
-//     }catch(e){
-//       setcreatChar(false)
-//       setVisible(false)
-//       console.log('Algo de errado não deu certo!!! - ',e)
-//        Alert.alert('Algo de errado não deu certo!!! - ',`erro: ${e}`)
-//     }
-// }
 
 
 const headleDel = async () => {
@@ -145,14 +115,6 @@ const headleDel = async () => {
         </Text>
 
             
-            {/* <Button 
-              onPress={handleViewcharacters} 
-              mode="text" 
-              style={{ marginRight: 8 }}
-            >
-                Ver Personagens
-            </Button> */}
-
 
             { 
               !char ? 
@@ -187,67 +149,7 @@ const headleDel = async () => {
         operation={char ? 'update' : 'create'} 
         onClose={hideDialog } 
  />
-       {/* <Portal>
-        <Modal 
-            visible={visible} 
-            onDismiss={hideDialog} 
-            contentContainerStyle={{ backgroundColor:theme.colors.card,
-            padding: 20,
-            margin: 20,
-            borderRadius: 14}}
-            theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.8)'}}}
-            >
-              <ScrollView>
-            <Text style={{
-                color:theme.colors.secondary,
-                fontSize:24,
-                alignSelf:'center',
 
-            }}>
-                Adicionar ao Catálogo
-
-            </Text>
-
-          
-             <TextInput
-             label="Nome"
-                value={formData.name}
-                 mode="outlined"
-                onChangeText={(text) => handleChange('name', text)}
-                style={{ marginBottom: 15,
-                    flex:1,
-                    color:theme.colors.secondary,
-                    borderRadius: 12,
-                    backgroundColor: theme.colors.surfaceVariant,}}
-                    />
-
-
-                 
-             <TextInput
-             label="Sobre"
-                value={formData.description}
-                onChangeText={(text) => handleChange('description', text)}
-                multiline
-                 mode="outlined"
-                numberOfLines={28}
-                style={{ marginBottom: 15,
-                    borderRadius: 12,
-                    color:theme.colors.secondary,
-                    backgroundColor: theme.colors.surfaceVariant,}}
-                    />
-
-          </ScrollView>
-          {!creatChar ?
-
-              <Button onPress={()=>headleSetChar(characterData)} mode="contained" style={{ marginTop: 10 }}>
-                Adicionar
-            </Button>
-            :
-             <ActivityIndicator animating={true} color={theme.colors.primary} />
-            }
-        </Modal>
-
-</Portal> */}
 
    <Portal>
       <Dialog visible={visibleDel} onDismiss={()=>setVisibleDel(!visibleDel)}>

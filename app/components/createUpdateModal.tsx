@@ -22,7 +22,7 @@ interface CreateUpdateModalProps {
 
 
 export const CreateUpdateModal = ({externalVisible,type, item, operation, onClose}:CreateUpdateModalProps)=>{
-    const { characters, setCharacters, addChar, delChar} = useData();
+    const { characters, setCharacters, addChar, delChar, addAnime, updateChar, updateAnime} = useData();
 
     const theme = useTheme() as AppTheme;
     const [internalVisible, setInternalVisible] = useState(false); // Inicia como false
@@ -58,15 +58,14 @@ export const CreateUpdateModal = ({externalVisible,type, item, operation, onClos
                 name: charApi.name,
                 images: charApi.images.jpg.large_image_url || charApi.images.jpg.image_url,
                 description: charApi.about,
-                animeId: charApi.anime[0],
-                status: '' 
+                animeId: charApi.anime[0].anime?.mal_id,
             };
         case 'animeApi':
             const animeApi = item as (AnimeData);
             return {
                 id: animeApi.mal_id,
                 name: animeApi.title_english ||animeApi.title,
-                images: animeApi.images,
+                images: animeApi.images.jpg || animeApi.images.webp || '',
                 description: animeApi.synopsis,
                 status: 'list'
             };
@@ -101,8 +100,27 @@ const [formData, setFormData] = useState({
     onClose(false);            // ⭐️ Notifica o componente pai para atualizar seu estado
   };
 
-    function headleSetAnime() {
-        Alert.alert('Criou, Anime',)
+    async function headleSetAnime() {
+        setloading(true)
+          const newAnime:Anime = {
+             id: formData.id!.toString(),
+             name: formData.name!,
+             description: formData.description!,
+             images: formData.images!.toString(),
+             status: formData.status
+         }
+         try{
+            await addAnime(newAnime)
+            setloading(false)
+            setInternalVisible(false)
+            Alert.alert('Criou, Anime',newAnime.name)
+
+        }catch(e){
+            setloading(false)
+            setInternalVisible(false)
+            console.log('Algo de errado não deu certo!!! - ',e)
+            Alert.alert('Algo de errado não deu certo!!! - ',`erro: ${e}`)
+        }
         
     }
     
@@ -115,29 +133,67 @@ const [formData, setFormData] = useState({
              images: formData.images!.toString(),
              animeId: formData.animeId!.toString()
          }
-    try{
-        await addChar(newChar)
+        try{
+            await addChar(newChar)
+            setloading(false)
+            setInternalVisible(false)
+            Alert.alert("Tudo Pronto!",`${formData.name} Add`)
+
+        }catch(e){
         setloading(false)
         setInternalVisible(false)
-        Alert.alert("Tudo Pronto!",`${formData.name} Add`)
+        console.log('Algo de errado não deu certo!!! - ',e)
+        Alert.alert('Algo de errado não deu certo!!! - ',`erro: ${e}`)
+        }
+        
+    }
+    
+    async function headleUpdateChar() {
+        setloading(true)
+        const newChar:Character = {
+             id: formData.id!.toString(),
+             name: formData.name!,
+             description: formData.description!,
+             images: formData.images!.toString(),
+             animeId: formData.animeId!.toString()
+         }
+         try{
+            await updateChar(newChar)
+            setloading(false)
+            setInternalVisible(false)
+            Alert.alert("Tudo Pronto!",`${formData.name} Atualizado`)
 
-    }catch(e){
-      setloading(false)
-      setInternalVisible(false)
-      console.log('Algo de errado não deu certo!!! - ',e)
-       Alert.alert('Algo de errado não deu certo!!! - ',`erro: ${e}`)
-    }
-        Alert.alert('Criou',formData.name!)
+        }catch(e){
+            setloading(false)
+            setInternalVisible(false)
+            console.log('Algo de errado não deu certo!!! - ',e)
+            Alert.alert('Algo de errado não deu certo!!! - ',`erro: ${e}`)
+        }
+    
         
     }
     
-    function headleUpdateChar() {
-        Alert.alert('Atualizou',)
-        
-    }
-    
-    function headleUpdateAnime( ) {
-        Alert.alert('Atualizou')
+    async function headleUpdateAnime( ) {
+         setloading(true)
+        const newAnime:Anime = {
+             id: formData.id!.toString(),
+             name: formData.name!,
+             description: formData.description!,
+             images: formData.images!.toString(),
+             status: formData.status
+         }
+         try{
+            await updateAnime(newAnime)
+            setloading(false)
+            setInternalVisible(false)
+            Alert.alert("Tudo Pronto!",`${formData.name} Atualizado`)
+
+        }catch(e){
+            setloading(false)
+            setInternalVisible(false)
+            console.log('Algo de errado não deu certo!!! - ',e)
+            Alert.alert('Algo de errado não deu certo!!! - ',`erro: ${e}`)
+        }
         
     }
 
@@ -191,6 +247,20 @@ const [formData, setFormData] = useState({
              numberOfLines={28}
              style={{ marginBottom: 15,
                 borderRadius: 12,
+                height:300,
+                color:theme.colors.secondary,
+                backgroundColor: theme.colors.surfaceVariant,}}
+                />
+             <TextInput
+             label="Imagens"
+             value={formData.images?.toString()}
+             onChangeText={(text) => handleChange('images', text)}
+             multiline
+             mode="outlined"
+             numberOfLines={28}
+             style={{ marginBottom: 15,
+                borderRadius: 12,
+                height:300,
                 color:theme.colors.secondary,
                 backgroundColor: theme.colors.surfaceVariant,}}
                 />
@@ -199,14 +269,15 @@ const [formData, setFormData] = useState({
           {operation == 'create' ?
 
             <Button onPress={()=>
-                                type == 'char' || 'charApi' ?
-                                headleSetChar() : 
-                                headleSetAnime()
+                                type == 'charApi' ?
+                                headleSetChar() :
+                            
+                                headleSetAnime() 
                             } mode="contained" style={{ marginTop: 10 }}>
                               {
                                 !loading ?
                                 'Adicionar' :
-                                 <ActivityIndicator animating={true} color={theme.colors.primary} />
+                                 <ActivityIndicator animating={true} color={theme.colors.background} />
                               }  
             </Button>
 
@@ -219,7 +290,7 @@ const [formData, setFormData] = useState({
                               {
                                 !loading ?
                                 'Salvar' :
-                                 <ActivityIndicator animating={true} color={theme.colors.primary} />
+                                 <ActivityIndicator animating={true} color={theme.colors.background} />
                               }  
             </Button>
 

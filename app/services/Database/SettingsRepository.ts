@@ -1,11 +1,14 @@
 import * as SQLite from 'expo-sqlite';
 import { Settings, SettingDBItem, defaultSettings } from '@app/types/config'; 
-import {Character, Anime} from '@app/services/types'
+import { Character, Anime } from '@app/services/types'
 
 const DB_NAME = 'app.db';
 let db: SQLite.SQLiteDatabase | null = null;
 
 
+/**
+ * Obtém a conexão com o banco de dados (padrão Singleton).
+ */
 export const getDBConnection = async (): Promise<SQLite.SQLiteDatabase> => {
   if (db) return db;
   try {
@@ -14,21 +17,24 @@ export const getDBConnection = async (): Promise<SQLite.SQLiteDatabase> => {
     return db;
   } catch (error) {
     console.error('Database connection failed:', error);
-    throw error;
+    // Re-lança o erro para ser capturado onde getDBConnection é chamado
+    throw error; 
   }
 };
 
 /**
- * Cria a tabela de configurações.
+ * Cria todas as tabelas necessárias: settings, animes e chars.
  */
 export const createSettingsTable = async (database: SQLite.SQLiteDatabase): Promise<void> => {
-  const query = `
+  // Query para a tabela settings
+  const settingsQuery = `
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY NOT NULL,
       value TEXT NOT NULL
     );
   `;
-  const anime = `
+  // Query para a tabela animes
+  const animeQuery = `
     CREATE TABLE IF NOT EXISTS animes (
       id TEXT PRIMARY KEY NOT NULL,
       name TEXT NOT NULL,
@@ -37,24 +43,37 @@ export const createSettingsTable = async (database: SQLite.SQLiteDatabase): Prom
       status TEXT NOT NULL
     );
   `;
-  const char = `
+  // Query para a tabela chars (Personagens)
+  const charQuery = `
     CREATE TABLE IF NOT EXISTS chars (
       id TEXT PRIMARY KEY NOT NULL,
       name TEXT NOT NULL,
       description TEXT,
       images TEXT,
       animeId TEXT,
-      FOREIGN KEY (animeId) REFERENCES animes(id)
+      FOREIGN KEY (animeId) REFERENCES animes(id) ON DELETE CASCADE
     );
   `;
   try {
-    await database.execAsync(query);
-    await database.execAsync(char);
-    await database.execAsync(anime);
+    // Executa a criação de todas as tabelas
+    await database.execAsync(settingsQuery);
+    await database.execAsync(animeQuery);
+    await database.execAsync(charQuery);
+    console.log('Todas as tabelas foram verificadas/criadas com sucesso.');
   } catch (error) {
-    console.error('Failed to create settings table:', error);
+    console.error('Failed to create tables:', error);
     throw error;
   }
+};
+
+
+/**
+ * Função central para garantir que o DB e todas as tabelas estejam prontas.
+ * ESTA DEVE SER CHAMADA E AGUARDADA NO INÍCIO DA APLICAÇÃO.
+ */
+export const initializeDBAndTables = async (): Promise<void> => {
+  const database = await getDBConnection();
+  await createSettingsTable(database);
 };
 
 
@@ -65,6 +84,7 @@ const getSettingsFromDB = async (database: SQLite.SQLiteDatabase): Promise<Setti
     const currentSettings: Partial<Settings> = {};
     
     result.forEach(item => {
+      // É crucial garantir que o valor seja mapeado corretamente para o tipo
       (currentSettings as any)[item.key] = item.value; 
     });
 
@@ -81,17 +101,17 @@ const getSettingsFromDB = async (database: SQLite.SQLiteDatabase): Promise<Setti
 export const saveAllSettings = async (database: SQLite.SQLiteDatabase, settings: Settings): Promise<void> => {
   const dataToSave: SettingDBItem[] = Object.entries(settings).map(([key, value]) => ({
     key: key as keyof Settings,
-    value: String(value), // Garante que tudo seja string
+    value: String(value), // Garante que tudo seja string para o DB
   }));
 
   const query = `INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?);`;
   
   try {
-    // Usamos o runAsync() em loop para atualizar cada chave/valor.
-    // O runAsync é a versão assíncrona correta para execução de comandos individuais.
+    // Usamos runAsync em loop para atualizar cada chave/valor.
     for (const item of dataToSave) {
         await database.runAsync(query, [item.key, item.value]);
     }
+    console.log('Settings salvas com sucesso.');
   } catch (error) {
     console.error("Failed to save all settings:", error);
     throw error;
@@ -100,17 +120,17 @@ export const saveAllSettings = async (database: SQLite.SQLiteDatabase, settings:
 
 
 /**
- * Inicializa o banco de dados e a tabela, e insere os valores iniciais se estiver vazia.
+ * Inicializa o banco de dados e as configurações (cria tabelas e insere valores iniciais).
  */
 export const initializeSettings = async (): Promise<Settings> => {
   const database = await getDBConnection();
-  await createSettingsTable(database);
+  await createSettingsTable(database); // Garante que as tabelas existam
 
   const settings = await getSettingsFromDB(database);
   
   // Condição para popular com dados padrão se estiver vazio
   if (!settings.name || settings.name === defaultSettings.name) {
-      // Re-salva para garantir que todos os campos padrão estão lá
+      // Salva para garantir que todos os campos padrão estão lá
       await saveAllSettings(database, defaultSettings);
       return defaultSettings;
   }
@@ -120,10 +140,11 @@ export const initializeSettings = async (): Promise<Settings> => {
 
 
 /**
- * Objeto de Repositório Principal
+ * Objeto de Repositório Principal para Settings
  */
 export const SettingsRepository = {
-    initialize: initializeSettings,
+    // Use a função que faz o setup completo, incluindo o preenchimento inicial.
+    initialize: initializeSettings, 
     get: async () => getSettingsFromDB(await getDBConnection()),
     save: async (settings: Settings) => saveAllSettings(await getDBConnection(), settings),
 };
@@ -144,8 +165,8 @@ export const saveAnime = async (anime: Anime): Promise<void> => {
   await database.runAsync(query, [
     id,
     name,
-    description || '',
-    images || '',
+    description || '', // Fallback para string vazia
+    images || '',      // Fallback para string vazia
     status || 'list',
   ]);
 };
@@ -157,7 +178,7 @@ export const getAnimeById = async (animeId: string): Promise<Anime | null> => {
   const result = await database.getFirstAsync<Anime>(query, [animeId]);
 
   if (result) {
-    // Expo-sqlite retorna um objeto com as colunas do DB. Mapeamos para o tipo Anime.
+    // Mapeia para o tipo Anime.
     const { id, name, images, description, status } = result;
     return { id, name, images, description, status } as Anime;
   }
@@ -188,13 +209,12 @@ export const deleteAnimeById = async (animeId: string): Promise<void> => {
 };
 
 
-
 export const AnimeRepository = {
-    initialize: initializeSettings,
+    // Aponta para a inicialização completa (que cria as tabelas)
+    initialize: initializeSettings, 
     getAll: async () => getAllAnimes(),
     set: async (anime:Anime) => saveAnime(anime),
     del: async (id:string) => deleteAnimeById(id),
-    // save: async (settings: Settings) => saveAllSettings(await getDBConnection(), settings),
 };
 
 
@@ -209,11 +229,13 @@ export const saveCharacter = async (char: Character): Promise<void> => {
   `;
   const { id, name, description, images, animeId } = char;
 
+  console.warn(char)
+
   await database.runAsync(query, [
     id,
     name,
-    description || null,
-    images || null,
+    description || '', // CORREÇÃO: Garante que não é null/undefined
+    images || '',      // CORREÇÃO: Garante que não é null/undefined
     animeId,
   ]);
 };
@@ -230,7 +252,8 @@ export const getCharacterById = async (charId: string): Promise<Character | null
   }
   return null;
 };
-// READ: Busca um all Personagem
+
+// READ: Busca todos os Personagens
 export const getAllCharacter = async (): Promise<Character[]> => {
   const database = await getDBConnection();
   const query = `SELECT * FROM chars;`;
@@ -270,8 +293,8 @@ export const deleteCharacterById = async (charId: string): Promise<void> => {
 };
 
 
-
 export const CharRepository = {
+    // Aponta para a inicialização completa (que cria as tabelas)
     initialize: initializeSettings,
     getAll: async () => getAllCharacter(),
     set: async (char:Character) => saveCharacter(char),

@@ -1,10 +1,12 @@
-// DataContex.tsx
+
+
 import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 import type { Anime, Character } from "@app/services/types";
 import * as api from "@app/services/api"; // Certifique-se de que a importação da API está aqui
 import { AnimeRepository, CharRepository } from '@app/services/Database/SettingsRepository';
 import { useSettingsStore } from '@app/hooks/useSettingsStore';
 import { ActivityIndicator, MD2Colors, Text } from 'react-native-paper';
+import { StyleSheet, View } from 'react-native';
 
 // 1. Defina o formato dos dados (incluindo o status de carregamento e a nova função)
 interface DataContextType {
@@ -12,14 +14,13 @@ interface DataContextType {
   setCharacters: React.Dispatch<React.SetStateAction<Character[]>>;
   animes: Anime[];
   setAnimes: React.Dispatch<React.SetStateAction<Anime[]>>;
-  loading: boolean;
+  loading: boolean; // Indica se os dados estão sendo carregados (inicialização + fetch)
   addAnime: (newAnime:Anime) => Promise<void>; 
   delAnime: (id:string) => Promise<void>; 
   addChar: (newChar:Character) => Promise<void>; 
   delChar: (id:string) => Promise<void>; 
   updateAnime: (updatedAnime: Anime) => Promise<void>; 
   updateChar: (updatedChar: Character) => Promise<void>;
-
 }
 
 export const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -29,14 +30,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [animes, setAnimes] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(true);
-  const { settings, isLoading, isInitialized, initialize, updateSetting } = useSettingsStore();
+  
+  // Assumimos que useSettingsStore lida com initializeSettings() e o isInitialized só é true APÓS o DB estar pronto.
+  const { settings, isLoading: isSettingsLoading, isInitialized, initialize, updateSetting } = useSettingsStore();
   
 
-  // Lógica de Chamada da API para inicialização
+  // Lógica de Chamada da API / DB para inicialização dos dados
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      if (settings.API != ''){
+      
+      // Checa o modo de operação (API ou Local DB)
+      if (settings.API !== ''){
         const [animesData, charactersData] = await Promise.all([
           api.getAnimes(),
           api.getCharacters(),
@@ -44,6 +49,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setAnimes(animesData);
         setCharacters(charactersData); 
       }else{
+        // Se estiver no modo local, chama o repositório DB (que depende da inicialização ter sido feita no useSettingsStore)
         const [animesData, charactersData] = await Promise.all([
            AnimeRepository.getAll(),
            CharRepository.getAll(),
@@ -60,15 +66,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   
 
   useEffect(() => {
-    // 1. Garante que o store de settings inicializou E que não estamos carregando as configurações
-    if (isInitialized && !isLoading) {
+    // Garante que o store de settings inicializou E que não estamos carregando as configurações
+    // Isto garante que o DB já foi configurado (pelo useSettingsStore) antes de tentar ler os dados iniciais.
+    if (isInitialized && !isSettingsLoading) {
         fetchData();
     }
-}, [isInitialized, isLoading, fetchData])
+  }, [isInitialized, isSettingsLoading, fetchData])
 // ----------------------------------------------------------------------
   const addAnime = useCallback(async (newAnime: Anime) => {
     try {
-      if (settings.API != ''){
+      if (settings.API !== ''){
         await api.createAnime(newAnime);
         AnimeRepository.set(newAnime)
         setAnimes(prevAnimes => [...prevAnimes, newAnime]);
@@ -115,7 +122,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const delAnime = useCallback(async (id: string) => {
     try {
-      if (settings.API != ''){
+      if (settings.API !== ''){
         await api.deleteAnime(id);
         AnimeRepository.del(id)
          setAnimes(prevAnimes => {
@@ -149,6 +156,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         CharRepository.set(newChar); // Salva no local após sucesso da API
         setCharacters(prevCharacters => [...prevCharacters, newChar]);
       }else{
+        // Esta chamada AGORA é segura, pois o componente principal está bloqueado pelo !isInitialized || loading
         CharRepository.set(newChar);
         setCharacters(prevCharacters => [...prevCharacters, newChar]);
         console.log('Char adicionado com sucesso:', newChar.name);
@@ -164,14 +172,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 const updateChar = useCallback(async (updatedChar: Character) => {
     try {
         if (settings.API !== '') {
-            // 1. Tenta atualizar na API
             await api.updateCharacter(updatedChar.id,updatedChar);
-            
-            // 2. Atualiza no repositório local
             CharRepository.set(updatedChar);
 
         } else {
-            // 1. Apenas atualiza no repositório local
             CharRepository.set(updatedChar);
             console.log(`Personagem atualizado localmente: ${updatedChar.name}`);
         }
@@ -179,7 +183,6 @@ const updateChar = useCallback(async (updatedChar: Character) => {
         // 3. Atualiza o estado local de forma imutável
         setCharacters(prevCharacters => 
             prevCharacters.map(char => 
-                // Se o ID for igual, substitui pelo objeto atualizado
                 char.id === updatedChar.id ? updatedChar : char
             )
         );
@@ -194,62 +197,58 @@ const updateChar = useCallback(async (updatedChar: Character) => {
 
   const delChar = useCallback(async (id: string) => {
     try {
-      if (settings.API != ''){
+      if (settings.API !== ''){
         await api.deleteCharacter(id);
         CharRepository.del(id)
         setCharacters(prevCsetCharacters => {
             return prevCsetCharacters.filter(char => char.id !== id);
           });
-          console.log('Anime apagado do servidor com sucesso:', id );
+          console.log('Personagem apagado do servidor com sucesso:', id );
       }else{
         CharRepository.del(id)
         setCharacters(prevCsetCharacters => {
             return prevCsetCharacters.filter(char => char.id !== id);
           });
-        console.log('Anime apagado com sucesso:', id );
+        console.log('Personagem apagado com sucesso:', id );
       }
     } catch (error) {
-      console.error("Falha ao adicionar anime no servidor.", error);
+      console.error("Falha ao apagar personagem no servidor.", error);
       throw error; // Propaga o erro para o componente que chamou
     }
   }, [settings.API]);
 
 // ----------------------------------------------------------------------
 
-  // Chama a API apenas na montagem do Provider
-  useEffect(() => {
-    fetchData();
-  }, [settings.API]);
 
   // Use useMemo para evitar re-renders desnecessários
   const contextValue = useMemo(() => ({
     characters, setCharacters,
     animes, setAnimes,
-    loading, 
+    loading: loading || isSettingsLoading, // Combina loading de dados e de settings
     addAnime, 
     addChar,
     delAnime,
     delChar,
     updateAnime,
     updateChar, 
-  }), [characters, animes, loading, addAnime,
-     addChar, delAnime, settings, delChar,
-    updateAnime, updateChar]); // Adicione 'addAnime' como dependência
+  }), [characters, animes, loading, isSettingsLoading, addAnime,
+     addChar, delAnime, delChar, updateAnime, updateChar]); 
 
 
-//   if (!isInitialized || loading) {
-//      return (
-
-//        <>
-//      <ActivityIndicator animating={true} style={{width:'100%',height:'100%'}} size={'large'} color={MD2Colors.red800}/>
-//      <Text style={{color:'black'}}>
-// Carregando dados do Servidor
-//      </Text>
-//      </>
-//       )
-//     //  return null; // Pode ser um ActivityIndicator ou uma Splash Screen
-// }
-
+  // 🚨 BLOQUEIO DE CARREGAMENTO CRÍTICO 🚨
+  // Esta lógica garante que NENHUM componente filho que dependa das funções DB
+  // seja renderizado antes da inicialização do DB e do carregamento inicial dos dados.
+  // if (!isInitialized || loading || isSettingsLoading) {
+  // if (!isInitialized || loading || isSettingsLoading) {
+  //    return (
+  //      <View style={styles.loadingContainer}>
+  //        <ActivityIndicator animating={true} size={'large'} color={MD2Colors.red800}/>
+  //        <Text style={styles.loadingText}>
+  //          Carregando dados do Catálogo...
+  //        </Text>
+  //      </View>
+  //     )
+  // }
 
 
   return (
@@ -267,3 +266,17 @@ export function useData() {
   }
   return context;
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF', // Cor de fundo do carregamento
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333333',
+  }
+});
