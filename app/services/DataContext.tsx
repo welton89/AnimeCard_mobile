@@ -101,22 +101,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const updateAnime = useCallback(async (updatedAnime: Anime) => {
     try {
         if (settings.API !== '') {
-            // 1. Tenta atualizar na API
             await api.updateAnime(updatedAnime.id, updatedAnime);
-            
-            // 2. Atualiza no repositório local
             AnimeRepository.set(updatedAnime);
-
         } else {
-            // 1. Apenas atualiza no repositório local
             AnimeRepository.set(updatedAnime);
             console.log(`Anime atualizado localmente: ${updatedAnime.name}`);
         }
-
-        // 3. Atualiza o estado local de forma imutável
         setAnimes(prevAnimes => 
             prevAnimes.map(anime => 
-                // Se o ID for igual, substitui pelo objeto atualizado
                 anime.id === updatedAnime.id ? updatedAnime : anime
             )
         );
@@ -125,7 +117,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         console.error("Falha ao atualizar anime.", error);
         throw error;
     }
-}, [settings]); // Dependência: 'settings'
+}, [settings]);
 
   const delAnime = useCallback(async (id: string) => {
     try {
@@ -186,8 +178,6 @@ const updateChar = useCallback(async (updatedChar: Character) => {
             CharRepository.set(updatedChar);
             console.log(`Personagem atualizado localmente: ${updatedChar.name}`);
         }
-
-        // 3. Atualiza o estado local de forma imutável
         setCharacters(prevCharacters => 
             prevCharacters.map(char => 
                 char.id === updatedChar.id ? updatedChar : char
@@ -198,7 +188,7 @@ const updateChar = useCallback(async (updatedChar: Character) => {
         console.error("Falha ao atualizar personagem.", error);
         throw error;
     }
-}, [settings]); // Dependência: 'settings'
+}, [settings, characters]);
 
 
 

@@ -2,11 +2,12 @@
 import { Anime, AnimeData, Character } from '@app/services/types';
 import { CharacterData } from '@app/types/CharacterData';
 
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { ActivityIndicator, Button, Card, Dialog, IconButton, Modal, Portal, useTheme,TextInput } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useData } from '@app/services/DataContext';
+import {ImageScroller} from '@components/ImageScroller'
 
 
 
@@ -22,70 +23,113 @@ interface CreateUpdateModalProps {
 
 
 export const CreateUpdateModal = ({externalVisible,type, item, operation, onClose}:CreateUpdateModalProps)=>{
-    const { characters, setCharacters, addChar, delChar, addAnime, updateChar, updateAnime} = useData();
+    const { addChar, addAnime, updateChar, updateAnime} = useData();
 
     const theme = useTheme() as AppTheme;
     const [internalVisible, setInternalVisible] = useState(false); // Inicia como false
     const [loading, setloading] = useState(false); // Inicia como false
-
-
+    
+    
     const initialData = useMemo(() => {
-    if (!item) return {}; 
+        if (!item) return {}; 
+        
+        switch (type) {
+            case 'char':
+                const char = item as (Character); 
+                return {
+                    id: char.id,
+                    name: char.name,
+                    images:char.images || '',
+                    description: char.description,
+                    animeId: char.animeId 
+                };
+                case 'anime':
+                    const anime = item as (Anime ); 
+                    return {
+                        id: anime.id,
+                        name: anime.name,
+                        images: anime.images || '',
+                        description: anime.description,
+                        status: anime.status 
+                    };
+                    case 'charApi':
+                        const charApi = item as (CharacterData);
+                        return {
+                            id: charApi.mal_id,
+                            name: charApi.name,
+                            images: charApi.images.jpg.large_image_url || charApi.images.jpg.image_url || '',
+                            description: charApi.about,
+                            animeId: charApi.anime[0].anime?.mal_id,
+                        };
+                        case 'animeApi':
+                            const animeApi = item as (AnimeData);
+                            return {
+                                id: animeApi.mal_id,
+                                name: animeApi.title_english ||animeApi.title,
+                                images: animeApi.images.jpg || animeApi.images.webp || '',
+                                description: animeApi.synopsis,
+                                status: 'list'
+                            };
+                            default:
+                                return {};
+                            }
+                        }, [item, type]);
+                        
+                        const [formData, setFormData] = useState({
+                            id: initialData.id,
+                            name: initialData.name,
+                            images: initialData.images,
+                            description: initialData.description,
+                            animeId: initialData.animeId,
+                            status: initialData.status
+                        });
+                        
+    const listImages = typeof formData.images === 'string' ? formData.images.split("\n").filter((uri: string) => uri.trim() !== "") : []
+    const [imageLinks, setImageLinks] = useState<string[]>(listImages)
+    const [newImageUrl, setNewImageUrl] = useState('');
 
-    switch (type) {
-        case 'char':
-            const char = item as (Character); 
-            return {
-                id: char.id,
-                name: char.name,
-                images:char.images,
-                description: char.description,
-                animeId: char.animeId 
-            };
-        case 'anime':
-            const anime = item as (Anime ); 
-            return {
-                id: anime.id,
-                name: anime.name,
-                images: anime.images,
-                description: anime.description,
-                status: anime.status 
-            };
-        case 'charApi':
-            const charApi = item as (CharacterData);
-            return {
-                id: charApi.mal_id,
-                name: charApi.name,
-                images: charApi.images.jpg.large_image_url || charApi.images.jpg.image_url,
-                description: charApi.about,
-                animeId: charApi.anime[0].anime?.mal_id,
-            };
-        case 'animeApi':
-            const animeApi = item as (AnimeData);
-            return {
-                id: animeApi.mal_id,
-                name: animeApi.title_english ||animeApi.title,
-                images: animeApi.images.jpg || animeApi.images.webp || '',
-                description: animeApi.synopsis,
-                status: 'list'
-            };
-        default:
-            return {};
-    }
-}, [item, type]);
 
-// 2. Gerenciando o estado do formulário
-const [formData, setFormData] = useState({
-    id: initialData.id,
-    name: initialData.name,
-    images: initialData.images,
-    description: initialData.description,
-    animeId: initialData.animeId,
-    status: initialData.status
-});
+const handleRemoveImage = useCallback((urlToRemove: string) => {
+  setImageLinks((currentLinks: string[]) =>
+    currentLinks.filter((link) => link !== urlToRemove),
+  );
+}, []);
 
 
-  const handleChange = (field: keyof Character, value: string ) => {
+const handleManualAddImage = () => {
+  const url = newImageUrl.trim();
+
+  if (url === '') {
+    Alert.alert('Atenção', 'Por favor, insira um link de imagem válido.');
+    return;
+  }
+  
+  // 1. Verifica se o link já existe
+  if (imageLinks.includes(url)) {
+    Alert.alert('Aviso', 'Esta imagem já foi adicionada.');
+    setNewImageUrl(''); // Limpa o campo mesmo assim
+    return;
+  }
+
+  // 2. Atualiza imageLinks e formData.images
+  setImageLinks((currentLinks: string[]) => {
+    const newLinks = [...currentLinks, url];
+
+    // Sincroniza o formData.images com a nova lista
+    setFormData(prev => ({ 
+        ...prev, 
+        images: newLinks.join('\n') 
+    }));
+    
+    return newLinks;
+  });
+
+  // 3. Limpa o input
+  setNewImageUrl('');
+};
+
+
+const handleChange = (field: keyof Character, value: string ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -106,7 +150,7 @@ const [formData, setFormData] = useState({
              id: formData.id!.toString(),
              name: formData.name!,
              description: formData.description!,
-             images: formData.images!.toString(),
+             images: imageLinks.join('\n'),//formData.images!.toString(),
              status: formData.status
          }
          try{
@@ -130,7 +174,7 @@ const [formData, setFormData] = useState({
              id: formData.id!.toString(),
              name: formData.name!,
              description: formData.description!,
-             images: formData.images!.toString(),
+             images: imageLinks.join('\n'),//formData.images!.toString(),
              animeId: formData.animeId!.toString()
          }
         try{
@@ -154,7 +198,7 @@ const [formData, setFormData] = useState({
              id: formData.id!.toString(),
              name: formData.name!,
              description: formData.description!,
-             images: formData.images!.toString(),
+             images: imageLinks.join('\n'),//formData.images!.toString(),
              animeId: formData.animeId!.toString()
          }
          try{
@@ -179,7 +223,7 @@ const [formData, setFormData] = useState({
              id: formData.id!.toString(),
              name: formData.name!,
              description: formData.description!,
-             images: formData.images!.toString(),
+             images: imageLinks.join('\n'),// formData.images!.toString(),
              status: formData.status
          }
          try{
@@ -235,6 +279,10 @@ const [formData, setFormData] = useState({
              label="Nome"
              value={ formData.name!}
              mode="outlined"
+             outlineStyle={{
+                        borderRadius: 12,
+                        backgroundColor: theme.colors.surfaceVariant,
+                    }}
              onChangeText={(text) => handleChange('name', text)}
              style={{ marginBottom: 15,
                 flex:1,
@@ -250,27 +298,54 @@ const [formData, setFormData] = useState({
              onChangeText={(text) => handleChange('description', text)}
              multiline
              mode="outlined"
+             outlineStyle={{
+                        borderRadius: 12,
+                        height:250,
+                        backgroundColor: theme.colors.surfaceVariant,
+                    }}
              numberOfLines={28}
              style={{ marginBottom: 15,
                 borderRadius: 12,
-                height:300,
+                height:250,
+                marginEnd:20,
                 color:theme.colors.secondary,
                 backgroundColor: theme.colors.surfaceVariant,}}
                 />
-             <TextInput
-             label="Imagens"
-             value={formData.images?.toString()}
-             onChangeText={(text) => handleChange('images', text)}
-             multiline
-             mode="outlined"
-             numberOfLines={28}
-             style={{ marginBottom: 15,
-                borderRadius: 12,
-                height:300,
-                color:theme.colors.secondary,
-                backgroundColor: theme.colors.surfaceVariant,}}
-                />
+    
 
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                <TextInput
+                    label="URL Imagem"
+                    value={newImageUrl} // Usa o novo estado local
+                    mode="outlined"
+                    onChangeText={setNewImageUrl} // Atualiza o novo estado local
+                    placeholder="Cole o link da imagem aqui"
+                    outlineStyle={{
+                        borderRadius: 12,
+                        backgroundColor: theme.colors.surfaceVariant,
+                        height:50,
+                    }}
+                    style={{ 
+                        flex: 1, // Permite que o TextInput ocupe o espaço restante
+                        height:40,
+                    }}
+                />
+                <IconButton
+                    icon="plus-circle"
+                    iconColor={theme.colors.primary}
+                    // color={theme.colors.primary}
+                    size={42}
+                    onPress={handleManualAddImage}
+                    // Desabilita se o campo estiver vazio
+                    disabled={newImageUrl.trim() === ''} 
+                />
+            </View>
+                        <ImageScroller
+                        imageUrls={imageLinks}
+                        onRemoveImage={handleRemoveImage}
+                    />
+
+            
           </ScrollView>
           </KeyboardAvoidingView>
           {operation == 'create' ?
@@ -300,7 +375,7 @@ const [formData, setFormData] = useState({
             }
             {
                 loading ?
-                        <ActivityIndicator animating={true} color={theme.colors.primary} />
+                        <ActivityIndicator animating={true} color={theme.colors.primary} style={{margin:20}} />
                         : null
             }
         </Modal>

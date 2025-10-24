@@ -8,7 +8,6 @@ import { router } from 'expo-router'; //
 import { Character, Anime } from '../services/types'; 
 import { useData } from '../services/DataContext'; 
 import { ImageCarousel } from './ImageCarrousel'; 
-import { MenuOpcoes } from './MenuOpcoes'; 
 import { AppTheme } from '@app/themes/themes';
 
 
@@ -39,13 +38,10 @@ export function ItemCard({ item }: ItemCardProps) {
     if (isAnime || !animeImg || animeImg.length === 0) {
       return null;
     }
-    
-    // Usamos Avatar.Image do Paper
     return (
       <TouchableOpacity
       onPress={()=>{router.push(`/pages/animes/animeDetail/${anime?.id}`)}}
       >
-
       <Avatar.Image
         size={40} // Tamanho fixo para o avatar
         source={{ uri: animeImg[0] }}
@@ -58,7 +54,6 @@ export function ItemCard({ item }: ItemCardProps) {
   const handleViewMore = () => {
     if (isAnime) {
       router.push(`/pages/animes/animeDetail/${item.id}`);
-
     }
     else if(!isAnime){
       router.push(`/pages/characters/charDetail/${item.id}`);
@@ -132,7 +127,7 @@ export function ItemCard({ item }: ItemCardProps) {
 
     <Card style={[styles.cardContainer]}>
       
-      {/* 3. CardHeader (Substituído por Card.Title e MenuOpcoes) */}
+      {/* 3. CardHeader (Substituído por Card.Title) */}
       <View style={styles.headerContainer}>
         <Card.Title
           title={
@@ -146,7 +141,6 @@ export function ItemCard({ item }: ItemCardProps) {
           }
           subtitle={anime?.name || ''}
           left={renderAvatar}
-          // titleStyle e subtitleStyle para aplicar as quebras de linha/fontes
           titleStyle={styles.title}
           subtitleStyle={styles.subTitle}
         />
@@ -163,9 +157,7 @@ export function ItemCard({ item }: ItemCardProps) {
         </Text>
       </Card.Content>
 
-      {/* 6. CardActions (Ações e ExpandMore) */}
       <Card.Actions style={styles.cardActions}>
-
         <IconButton 
           icon={ "youtube-tv"} 
           onPress={() => { /* Ação de Favorito */ }} 
@@ -174,17 +166,12 @@ export function ItemCard({ item }: ItemCardProps) {
           iconColor={ imageUris.length == 3 ? theme.colors.primary : theme.colors.surfaceDisabled}
         /> 
 
-    
-        
-        {/* Botão de Modal (Exemplo de nova ação) */}
         <Button onPress={handleViewMore} mode="text" style={{ marginLeft: 8 }}>
             Ver Mais
         </Button>
 
       </Card.Actions>
       
-
-
     </Card>
  
   );

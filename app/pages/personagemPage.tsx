@@ -7,13 +7,14 @@ import { AppTheme } from '@app/themes/themes';
 import { Character } from '@app/services/types';
 
 export default function PersonagemPage() {
-  const { characters, setCharacters, loading } = useData();
+  const { characters, loading } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const theme = useTheme() as AppTheme; 
 
   const renderItem: ListRenderItem<Character> = ({ item }) => <ItemCard item={item}/>;
 
   return (
+    
             <View style={{ 
               flex: 1,
               backgroundColor: theme.colors.background,

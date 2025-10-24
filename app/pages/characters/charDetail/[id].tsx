@@ -1,9 +1,9 @@
-import { ScrollView, StyleSheet, View, Text, Image, Alert } from 'react-native';
-import { ActivityIndicator, Button, Card, Dialog, IconButton, Modal, Portal, useTheme,TextInput } from 'react-native-paper';
+import { ScrollView, StyleSheet, View, Text, Alert } from 'react-native';
+import { ActivityIndicator, Button, Dialog, Portal, useTheme } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
 import { useData } from '@app/services/DataContext';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Character, Anime, AnimeApiResponse, AnimeData,JikanImages } from '@app/services/types'; 
+import { Character } from '@app/services/types'; 
 import { ImageCarousel } from '@components/ImageCarrousel';
 import { useState, useEffect } from 'react';
 import { useCharacterData } from '@app/hooks/useCharacterData';
@@ -15,8 +15,7 @@ export default function CharDetail() {
 
   
   const theme = useTheme() as AppTheme; 
-  const { characters, setCharacters, addChar, delChar} = useData();
-  const [creatChar, setcreatChar] = useState(false);
+  const { characters, delChar} = useData();
   const [visible, setVisible] = useState(false);
   const [visibleDel, setVisibleDel] = useState(false);
 

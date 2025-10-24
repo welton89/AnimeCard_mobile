@@ -1,13 +1,11 @@
-import { FlatList, ListRenderItem, StyleSheet, View } from 'react-native';
+import { FlatList, ListRenderItem, View } from 'react-native';
+import { ActivityIndicator, Searchbar,  useTheme, Text } from 'react-native-paper';
+import { useState } from 'react';
 
 import { useData } from '@app/services/DataContext';
 import { ItemCard } from '@components/itemCard';
-
-import { ActivityIndicator, Searchbar,  useTheme, Text } from 'react-native-paper';
-import { useState } from 'react';
 import { AppTheme } from '@app/themes/themes';
 import { Anime } from '@app/services/types';
-
 
 
 export default  function AnimePage() {
@@ -16,9 +14,9 @@ export default  function AnimePage() {
     const theme = useTheme() as AppTheme; 
 
     const renderItem: ListRenderItem<Anime> = ({ item }) => <ItemCard item={item}/>;
-  return (
+    return (
 
- <View style={{ 
+        <View style={{ 
               flex: 1,
               backgroundColor: theme.colors.background,
               justifyContent:'center',
