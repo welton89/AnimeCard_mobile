@@ -307,13 +307,14 @@ const handleChange = (field: keyof Character, value: string ) => {
              style={{ marginBottom: 15,
                 borderRadius: 12,
                 height:250,
+                width:'100%',
                 marginEnd:20,
                 color:theme.colors.secondary,
                 backgroundColor: theme.colors.surfaceVariant,}}
                 />
     
 
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, position:'relative' }}>
                 <TextInput
                     label="URL Imagem"
                     value={newImageUrl} // Usa o novo estado local
@@ -328,15 +329,23 @@ const handleChange = (field: keyof Character, value: string ) => {
                     style={{ 
                         flex: 1, // Permite que o TextInput ocupe o espaço restante
                         height:40,
+                          width:'100%',
                     }}
                 />
                 <IconButton
                     icon="plus-circle"
                     iconColor={theme.colors.primary}
-                    // color={theme.colors.primary}
-                    size={42}
+                    size={30}
+                    style={{
+                        position:'absolute',
+                        right:0,
+                        top:2,
+                        backgroundColor:theme.colors.surfaceVariant,
+                        borderTopRightRadius:12,
+                        borderBottomRightRadius:12,
+                        borderTopLeftRadius:0,
+                    }}
                     onPress={handleManualAddImage}
-                    // Desabilita se o campo estiver vazio
                     disabled={newImageUrl.trim() === ''} 
                 />
             </View>
