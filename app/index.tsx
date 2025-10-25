@@ -69,7 +69,7 @@ export default function AppContent  ()  {
                 barStyle={[styles.bottomBar, { backgroundColor: theme.colors.elevation.level2 }]}
                 // Customização opcional dos ícones/cores se necessário:
                 // getLabelText={({ route }) => route.title}
-                // activeColor={theme.colors.primary}
+                activeColor={theme.colors.primary}
                 // inactiveColor={theme.colors.onSurface}
             />
 

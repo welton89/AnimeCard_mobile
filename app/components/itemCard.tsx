@@ -156,15 +156,30 @@ export function ItemCard({ item }: ItemCardProps) {
           {item.description}
         </Text>
       </Card.Content>
-
       <Card.Actions style={styles.cardActions}>
-        <IconButton 
+{isAnime ?
+        <Text variant="bodyLarge" style={styles.cardDescription}>
+          {(item as Anime).status == 'list' ? 'Na Lista' : (item as Anime).status == 'watching' ? 'Assistindo' : 'Finalizado'}
+        </Text>
+: 
+
+ <IconButton 
           icon={ "youtube-tv"} 
-          onPress={() => { /* Ação de Favorito */ }} 
+          disabled={true}
+          onPress={() => {  }} 
           style={styles.icons} 
-          size={30} // Ajuste o tamanho
-          iconColor={ imageUris.length == 3 ? theme.colors.primary : theme.colors.surfaceDisabled}
-        /> 
+          size={30} 
+        />  
+
+
+}
+        {/* <Text variant="bodyLarge" style={styles.cardDescription}>
+          {anime?.status == 'list' ? 'Na Lista' : anime?.status == 'watching' ? 'Assistindo' : 'Finalizado'}
+        </Text>
+         */}
+        
+        
+      
 
         <Button onPress={handleViewMore} mode="text" style={{ marginLeft: 8 }}>
             Ver Mais

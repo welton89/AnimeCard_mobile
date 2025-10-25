@@ -21,7 +21,7 @@ export const LightTheme = {
     ...DefaultTheme.colors,
     // Exemplo de customização de cores
      primary: '#ff9d00ff',
-    accent: '#03DAC6',
+    accent: '#c49a56ff',
     card:'#ffefe2d7',
     
   },
@@ -36,7 +36,7 @@ export const DarkTheme = {
     ...MD3DarkTheme.colors,
     // Exemplo de customização de cores escuras
     primary: '#ff9d00ff',
-    accent: '#03DAC6',
+    accent: '#c49a56ff',
     card:'#1e1e1eff',
     background:'#2c2c2cff',
   },

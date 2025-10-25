@@ -2,7 +2,7 @@
   "expo": {
     "name": "animeCard",
     "slug": "animeCard",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "dark",
@@ -20,7 +20,7 @@
       "package": "com.welton89.animeCard"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/logo.png"
     },
     "plugins": [
       "expo-sqlite",
@@ -28,8 +28,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/logo.png",
-          "imageWidth": 300,
-          "resizeMode": "cover",
+          "resizeMode": "contain",
           "backgroundColor": "#2c2c2c",
           "dark": {
             "backgroundColor": "#000000"

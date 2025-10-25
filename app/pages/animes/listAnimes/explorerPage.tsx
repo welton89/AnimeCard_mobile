@@ -293,7 +293,7 @@ useEffect(() => {
     <View style={styles.container}>   
         
         <Searchbar
-          placeholder="Pesquisar animes em jikan.moe..."
+          placeholder="Pesquisar em myanimelist.net"
           style={{width:'95%',backgroundColor:theme.colors.surfaceDisabled,alignSelf:'center' }}
           placeholderTextColor="#999"
           value={searchQuery}
