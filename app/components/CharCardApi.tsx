@@ -1,19 +1,20 @@
-import { AnimeData, Anime } from "@app/(services)/types";
+import { AnimeData, Anime } from "@app/_services/types";
 import { memo, useState } from "react";
-import { View, Text,Image, StyleSheet, Dimensions, Alert } from "react-native";
+import { View, Text,Image, StyleSheet, Dimensions, Alert, TouchableOpacity } from "react-native";
 import {  ActivityIndicator, Button, Dialog, IconButton, Portal, useTheme} from "react-native-paper";
 import { AppTheme } from '@app/themes/themes';
-import { useData } from '@app/(services)/DataContext';
+import { useData } from '@app/_services/DataContext';
 import { router } from "expo-router";
-import { getAnimeCharacters, JikanCharacter } from '@app/(services)/jikanApi'; // Sua nova API
+import { getAnimeCharacters, JikanCharacter } from '@app/_services/jikanApi'; // Sua nova API
 
 const { width } = Dimensions.get('window');
 
 interface CharCardApiProps {
   char: JikanCharacter;
+  animeId:string;
 }
 
-export const CharCardApi: React.FC<CharCardApiProps> = memo(({ char }) => {
+export const CharCardApi: React.FC<CharCardApiProps> = (({ char, animeId }) => {
     const imageUrl = char.character.images?.jpg?.image_url ;
     const theme = useTheme() as AppTheme; 
     const [visible, setVisible] = useState(false);
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
         if (char.character.mal_id) {
     
           // 🎯 Rota configurada: /characters/[id].tsx
-          router.push(`/pages/characters/charDetail/${char.character.mal_id}`); 
+          router.push(`/pages/characters/charDetail/${char.character.mal_id}?animeId=${animeId}`); 
           // router.push(`/pages/characters/${item.id}`); 
         } else {
           Alert.alert('Erro', 'ID do Anime não encontrado para navegação.');
@@ -103,48 +104,33 @@ const styles = StyleSheet.create({
 
 
   return (
+    <TouchableOpacity onPress={handleViewCharacters}>
+
     <View style={styles.cardContainer}>
       <Image
         style={styles.image}
         source={{ uri: imageUrl }}
         resizeMode="cover"
-      />
+        />
       <View style={styles.infoContainer}>
         <Text style={styles.primaryTitle} numberOfLines={2} ellipsizeMode="tail">
           {char.character.name}
         </Text>
-           <Button onPress={handleViewCharacters} mode="text" style={{ marginLeft: 8 }}>
-            Ver Mais
-        </Button>
-        {/* <Text style={styles.yearText}>
-          {anime.type}, {anime.episodes ? `${anime.episodes} eps` : '?? eps'} ({startYear})
+          
+        <Text style={styles.yearText}>
+         ID: {char.character.mal_id}
         </Text>
-        <Text style={styles.genreText} numberOfLines={1} ellipsizeMode="tail">
-          Gêneros: {genreList}
-        </Text> */}
-        
-        {/* Renderiza a avaliação SOMENTE se os dados estiverem disponíveis (Score / Scored_by) */}
-        {/* {hasScore ? (
-            <View style={styles.ratingContainer}>
-                <Text style={styles.ratingText}>⭐ {anime.score!.toFixed(2)}</Text>
-                <Text style={styles.voteText}>({anime.scored_by!.toLocaleString()} votos)</Text>
-                <IconButton 
-                icon={"plus-circle"}
-                onPress={()=>setVisible(!visible)}
-                style={{flex:1,alignSelf:'flex-end'}}
-                />
+        <Text style={styles.yearText}>
+         Papel: {char.role == 'Main' ? 'Elenco Principal' : 'Coadjuvante ou figurante'}
+        </Text>
+        <Text style={styles.yearText}>
+         Favoritado: {char.favorites} Vezes
+        </Text>
 
-
-                 <Button onPress={handleViewCharacters} mode="text" style={{ marginLeft: 8 }}>
-            Ver Mais
-        </Button>
-            </View>
-        ) : (
-            <Text style={styles.noRatingText}>Sem avaliação disponível</Text>
-        )} */}
       </View>
     
     </View>
+        </TouchableOpacity>
   );
 });
 

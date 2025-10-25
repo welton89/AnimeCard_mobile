@@ -8,7 +8,13 @@ import { useSettingsStore } from '@app/hooks/useSettingsStore';
 
 import { DataProvider } from '@app/_services/DataContext';
 import { ThemeContextProvider, useThemeToggle } from '@app/contexts/ThemeContext'; // Seu contexto de tema
+import * as SplashScreen from 'expo-splash-screen';
 
+// Set the animation options. This is optional.
+SplashScreen.setOptions({
+  duration: 1000,
+  fade: true,
+});
 export default function App() {
       const { settings, isLoading, isInitialized, initialize, updateSetting } = useSettingsStore();
       useEffect(() => {

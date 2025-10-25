@@ -16,6 +16,7 @@ export interface JikanCharacter {
     name: string;
   };
   role: 'Main' | 'Supporting';
+  favorites:number;
   voice_actors: Array<{
     person: {
       mal_id: number;
@@ -30,12 +31,7 @@ export interface JikanCharactersResponse {
 }
 
 
-/**
- * Busca a lista de personagens de um anime pelo ID usando a Jikan API.
- * @param animeId O MAL ID (MyAnimeList ID) do anime.
- * @returns Uma Promise que resolve para a lista de JikanCharacter.
- */
-export async function getAnimeCharacters(animeId: number): Promise<JikanCharacter[]> {
+export async function getAnimeCharacters(animeId: string): Promise<JikanCharacter[]> {
     const url = `${JIKAN_BASE_URL}/anime/${animeId}/characters`;
 
     try {

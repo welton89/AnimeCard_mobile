@@ -85,7 +85,7 @@ export default function SettingsPage() {
         value={settings.Token}
         onChangeText={(text) => handleTextChange('Token', text)}
         placeholder="Token Secreto"
-        placeholderTextColor={theme.colors.surface}
+        // placeholderTextColor={theme.colors.surface}
         secureTextEntry />
 
 
@@ -95,7 +95,7 @@ export default function SettingsPage() {
         value={settings.gemini}
         onChangeText={(text) => handleTextChange('gemini', text)}
         placeholder="Token Gemini"
-                placeholderTextColor={theme.colors.onSurface}
+                // placeholderTextColor={theme.colors.onSurface}
 
         secureTextEntry />
 

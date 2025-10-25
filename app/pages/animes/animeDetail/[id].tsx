@@ -220,23 +220,24 @@ const headleDel = async () => {
           Sinopse
         </Text>
 
-        {/* {
-          settings.gemini != '' ?
-        } */}
+   
 
      {   isLoading ?
 
 
         <ActivityIndicator animating={true} color={theme.colors.primary} style={{ margin: 2 }} />
               :
-        <Button  onPress={translatedText ? headleOriginal : headleTrans}
+      ( anime == undefined ?
+         <Button  onPress={translatedText ? headleOriginal : headleTrans}
               mode= 'text'
-              disabled={settings.gemini != '' ? false : true}
+              disabled={settings.gemini != ''  ? false : true}
 
               style={{   marginRight: -8,  }}>
               { translatedText ? 'Original' : 'Traduzir'}
 
-        </Button>}
+        </Button> : null
+        )
+        }
         </View>
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
           {translatedText || anime?.description || animeJ?.synopsis || 'Nenhuma sinopse detalhada fornecida.'}
@@ -278,6 +279,7 @@ const headleDel = async () => {
         item={!anime ? animeJ! :anime}
         operation={anime ? 'update' : 'create'} 
         traslate={translatedText}
+        animeId={null}
         onClose={hideDialog } 
  />
 

@@ -16,6 +16,7 @@ interface CreateUpdateModalProps {
     type: string;
     item: Anime | Character | AnimeData | CharacterData ;
     operation: string;
+    animeId:string | null;
     traslate: string | null;
     onClose: (visible: boolean) => void;
 
@@ -23,7 +24,7 @@ interface CreateUpdateModalProps {
 
 
 
-export default function CreateUpdateModal({ externalVisible, type, item, operation, traslate, onClose }: CreateUpdateModalProps) {
+export default function CreateUpdateModal({ externalVisible, type, item, operation, animeId, traslate, onClose }: CreateUpdateModalProps) {
     const { addChar, addAnime, updateChar, updateAnime } = useData();
 
     const theme = useTheme() as AppTheme;
@@ -60,7 +61,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                     name: charApi.name,
                     images: charApi.images.jpg.large_image_url || charApi.images.jpg.image_url || '',
                     description: charApi.about,
-                    animeId: charApi.anime[0].anime?.mal_id,
+                    animeId: animeId,
                 };
             case 'animeApi':
                 const animeApi = item as (AnimeData);
@@ -104,27 +105,20 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
             return;
         }
 
-        // 1. Verifica se o link já existe
         if (imageLinks.includes(url)) {
             Alert.alert('Aviso', 'Esta imagem já foi adicionada.');
             setNewImageUrl(''); // Limpa o campo mesmo assim
             return;
         }
 
-        // 2. Atualiza imageLinks e formData.images
         setImageLinks((currentLinks: string[]) => {
             const newLinks = [...currentLinks, url];
-
-            // Sincroniza o formData.images com a nova lista
             setFormData(prev => ({
                 ...prev,
                 images: newLinks.join('\n')
             }));
-
             return newLinks;
         });
-
-        // 3. Limpa o input
         setNewImageUrl('');
     };
 
@@ -251,8 +245,6 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
 
     return (
 
-
-
         <Portal>
             <Modal
                 visible={internalVisible}
@@ -266,11 +258,11 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                 }}
                 theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.8)' } }}
             >
-                <KeyboardAvoidingView
+                {/* <KeyboardAvoidingView
                     style={{ flex: 1, }}
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Ajuste o offset conforme necessário
-                >
+                > */}
 
                     <ScrollView style={{ flex: 1, }}>
                         <Text style={{
@@ -278,14 +270,14 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                             fontSize: 24,
                             alignSelf: 'center',
                         }}>
-                            Adicionar ao Catálogo
+                        { operation == 'create' ?  ' Adicionar ao Catálogo' : 'Editar'}
 
                         </Text>
 
 
                         <TextInput
                             label="Nome"
-                            value={formData.name!}
+                            defaultValue={formData.name!}
                             mode="outlined"
                             outlineStyle={{
                                 borderRadius: 12,
@@ -303,13 +295,14 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
 
                         <TextInput
                             label="Sobre"
-                            value={formData.description!}
+                            key='sobre'
+                            defaultValue={formData.description!}
                             onChangeText={(text) => handleChange('description', text)}
                             multiline
                             mode="outlined"
                             outlineStyle={{
                                 borderRadius: 12,
-                                height: 250,
+                                // height: 250,
                                 backgroundColor: theme.colors.surfaceVariant,
                             }}
                             numberOfLines={28}
@@ -319,17 +312,19 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                                 height: 250,
                                 width: '100%',
                                 marginEnd: 20,
+                                textAlignVertical: 'top',
                                 color: theme.colors.secondary,
                                 backgroundColor: theme.colors.surfaceVariant,
                             }} />
 
+        
 
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, position: 'relative' }}>
                             <TextInput
                                 label="URL Imagem"
-                                value={newImageUrl} // Usa o novo estado local
+                                defaultValue={newImageUrl} 
                                 mode="outlined"
-                                onChangeText={setNewImageUrl} // Atualiza o novo estado local
+                                onChangeText={setNewImageUrl} 
                                 placeholder="Cole o link da imagem aqui"
                                 outlineStyle={{
                                     borderRadius: 12,
@@ -337,7 +332,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                                     height: 50,
                                 }}
                                 style={{
-                                    flex: 1, // Permite que o TextInput ocupe o espaço restante
+                                    flex: 1, 
                                     height: 40,
                                     width: '100%',
                                 }} />
@@ -363,7 +358,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
 
 
                     </ScrollView>
-                </KeyboardAvoidingView>
+                {/* </KeyboardAvoidingView> */}
                 {loading ?
                     <ActivityIndicator animating={true} color={theme.colors.primary} style={{ margin: 20 }} />
                     : null}

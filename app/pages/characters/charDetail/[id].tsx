@@ -11,46 +11,40 @@ import CreateUpdateModal from '@app/components/createUpdateModal'
 import { useTranslator } from '@app/hooks/useTranslator';
 import { useSettingsStore } from '@app/hooks/useSettingsStore';
 
-
+type CharDetailParams = {
+  id: string;      // Captura o primeiro parâmetro de rota
+  animeId: string; // Captura o segundo parâmetro de rota
+};
 export default function CharDetail() {
-    const { id } = useLocalSearchParams<{ id: string }>();
-
+  const { id, animeId } = useLocalSearchParams<CharDetailParams>();
+ 
   
   const theme = useTheme() as AppTheme; 
-  const { characters, delChar} = useData();
+  const { characters, delChar } = useData();
   const [visible, setVisible] = useState(false);
   const [visibleDel, setVisibleDel] = useState(false);
 
   
   const { characterData, loading, error} = useCharacterData(id);
-  // const char:Character  = characters.find(a => a.id.toString() == id)!;
-  // const [char, setChar] = useState<Character | undefined>(characters.find(a => a.id.toString() == id));
-  // const charImg = char?.images.split("\n").filter((uri) => uri.trim() !== "")
-  const imageUris = [characterData?.images.jpg.image_url]
+  const char:Character  = characters.find(a => a.id.toString() == id)!;
+  const charImg = char?.images.split("\n").filter((uri) => uri.trim() !== "")
+  const imageUris = [characterData?.images.jpg.large_image_url ||characterData?.images.jpg.image_url ]
   const { translatedText, isLoading, translate, setTranslatedText } = useTranslator();
-    const { settings, isInitialized, initialize, updateSetting } = useSettingsStore();
+  const { settings, isInitialized, initialize, updateSetting } = useSettingsStore();
 
-const char = useMemo(() => {
-        return characters.find(a => a.id.toString() === id);
-    }, [characters, id]); // Depende do array 'characters' vindo do DataContext
-
-    // 2. Garante que 'charImg' também reaja à mudança de 'char'.
-    const charImg = useMemo(() => {
-        // Se 'char' for undefined (após uma exclusão, por exemplo), retorna um array vazio ou o fallback
-        return char?.images.split("\n").filter((uri) => uri.trim() !== "") || [];
-    }, [char]);
-  
-  const hideDialog = () => setVisible(false);
-  const headleTrans = async ()=> {
-    if (char?.description!.trim() != '' || characterData?.about!.trim() != '') {
-      translate(char?.description || characterData?.about || '')
+    
+    const hideDialog = () => setVisible(false);
+    const headleTrans = async ()=> {
+      if (char?.description!.trim() != '' || characterData?.about!.trim() != '') {
+        translate(char?.description || characterData?.about || '')
+      }
+      await translate(char?.description || characterData?.about!);
     }
-    await translate(char?.description || characterData?.about!);
-}
-
+    
+    console.log(imageUris)
   const headleOriginal = async ()=> {
   setTranslatedText(null)
-}
+  }
  
 
 
@@ -81,20 +75,17 @@ const headleDel = async () => {
     );
   }
 
-  // --- Renderização dos detalhes do Anime ---
   return (
     <ScrollView 
       style={{ flex: 1, backgroundColor: theme.colors.background }}
       contentContainerStyle={styles.scrollContent}>
 
-        <ImageCarousel data={ charImg! || imageUris  
+         <ImageCarousel data={ charImg || imageUris  
         } height={600}/>
 
       <View style={[styles.contentCard, { backgroundColor: theme.colors.surfaceVariant }]}>
         
-        {/* Título */}
         <Text style={[styles.title, { color: theme.colors.onSurfaceVariant }]}>
-          {/* {characterData?.name} */}
           {char?.name || characterData.name}
         </Text>
 
@@ -103,13 +94,13 @@ const headleDel = async () => {
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
             Nome Kanji: {characterData.name_kanji}
         </Text>
-        : ''
+        : null
 
         }
         {
             characterData.nicknames.length != 0  ?
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
-            Apelidos: {characterData.nicknames}
+            Apelidos: {characterData.nicknames.join(", ")}
         </Text>
         : ''
 
@@ -129,13 +120,15 @@ const headleDel = async () => {
              {   isLoading ?
                 <ActivityIndicator animating={true} color={theme.colors.primary} style={{ margin: 2 }} />
                       :
-                <Button  onPress={translatedText ? headleOriginal : headleTrans}
+               ( char == undefined ?
+                 <Button  onPress={translatedText ? headleOriginal : headleTrans}
                       mode= 'text'
                       disabled={settings.gemini != '' ? false : true}
                       style={{   marginRight: -8,  }}>
                       { translatedText ? 'Original' : 'Traduzir'}
         
-                </Button>}
+                </Button> : null)
+                }
                 </View>
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
           {  translatedText || char?.description || characterData?.about || 'Nada Sobre'}
@@ -174,6 +167,7 @@ const headleDel = async () => {
         type={char ? 'char' : 'charApi'}
         item={!char ? characterData :char}
         operation={char ? 'update' : 'create'} 
+        animeId={animeId}
         traslate={translatedText}
         onClose={hideDialog } 
  />

@@ -6,7 +6,7 @@ import { ActivityIndicator, useTheme, Searchbar } from 'react-native-paper';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { getAnimeCharacters, JikanCharacter } from '@app/_services/jikanApi';
 import { AppTheme } from '@app/themes/themes';
-import { CharCardApi } from '@components/CharacterCardApi';
+import { CharCardApi } from '@components/CharCardApi';
 
 
 
@@ -14,7 +14,7 @@ import { CharCardApi } from '@components/CharacterCardApi';
 export default function AnimeCharactersScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   
-  const animeId = id ? parseInt(id, 10) : NaN;
+  const animeId:string = id;
   const theme = useTheme() as AppTheme; 
   const [characters, setCharacters] = useState<JikanCharacter[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,11 +26,11 @@ export default function AnimeCharactersScreen() {
 
   // useEffect para buscar dados da API
   useEffect(() => {
-    if (isNaN(animeId)) {
-      setError("ID do Anime inválido.");
-      setLoading(false);
-      return;
-    }
+    // if (isNaN(animeId)) {
+    //   setError("ID do Anime inválido.");
+    //   setLoading(false);
+    //   return;
+    // }
 
     const loadCharacters = async () => {
       setLoading(true);
@@ -56,7 +56,9 @@ export default function AnimeCharactersScreen() {
     backgroundColor: theme.colors.background,
     alignItems: 'center',}}>
         <ActivityIndicator size="large" />
-        <Text>Carregando personagens...</Text>
+        <Text style={{ marginTop: 8,
+    color: theme.colors.secondary,
+    fontSize: 22,}}>Carregando personagens...</Text>
       </View>
     );
   }
@@ -86,7 +88,7 @@ export default function AnimeCharactersScreen() {
       </View>
     );
   }
-const renderItem: ListRenderItem<any> = ({ item }) => <CharCardApi char={item} />;
+const renderItem: ListRenderItem<any> = ({ item }) => <CharCardApi char={item} animeId={animeId}/>;
   // Renderização da lista de personagens
   return (
     <View style={{flex: 1,backgroundColor: theme.colors.background,}}>
@@ -144,7 +146,7 @@ const renderItem: ListRenderItem<any> = ({ item }) => <CharCardApi char={item} /
                   
         }
         keyExtractor={(item) => item.character.mal_id.toString()}
-        renderItem={({ item }) => <CharCardApi char={item} />}
+        renderItem={({ item }) => <CharCardApi char={item} animeId={animeId} />}
         contentContainerStyle={{ paddingBottom: 20 }}
       />
     </View>

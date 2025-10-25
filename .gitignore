@@ -26,6 +26,8 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+eas-expo-476204-67523760384d.json
+
 # macOS
 .DS_Store
 *.pem

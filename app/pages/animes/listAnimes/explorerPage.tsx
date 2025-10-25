@@ -10,7 +10,7 @@ import {
 import { Searchbar, useTheme } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
 
-import { AnimeApiResponse, AnimeData, } from '@app/(services)/types'
+import { AnimeApiResponse, AnimeData, } from '@app/_services/types'
 import {AnimeCardApi} from '@components/animeCardApi'
 
 const BASE_URL = 'https://api.jikan.moe/v4/anime?order_by=popularity&sfw=true';
@@ -116,8 +116,8 @@ const InfiniteScrollList: React.FC = () => {
   },
   loadingText: {
     marginTop: 8,
-    // color: '#666',
-    fontSize: 14,
+    color: theme.colors.secondary,
+    fontSize: 22,
   },
   errorTitle: {
     fontSize: 20,
@@ -259,7 +259,8 @@ useEffect(() => {
 
     return (
       <View style={styles.loadingFooter}>
-        <ActivityIndicator size="large" color="#4285F4" />
+        {/* <ActivityIndicator size="large" color="#4285F4" /> */}
+            <ActivityIndicator animating={true} size={'large'} color={theme.colors.primary} style={{width:350}} /> 
         <Text style={styles.loadingText}>Carregando mais animes...</Text>
       </View>
     );
@@ -270,7 +271,8 @@ useEffect(() => {
   if (isInitialLoad && isLoading) {
     return (
       <View style={[styles.container, styles.centerScreen]}>
-        <ActivityIndicator size="large" color="#4285F4" />
+        {/* <ActivityIndicator size="large" color="#4285F4" /> */}
+            <ActivityIndicator animating={true} size={'large'} color={theme.colors.primary} style={{width:350}} /> 
         <Text style={styles.loadingText}>Buscando os Animes...</Text>
       </View>
     );
