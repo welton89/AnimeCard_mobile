@@ -16,11 +16,6 @@ const fetchCharacterData = async (characterId: string): Promise<CharacterData> =
   return data.data; 
 };
 
-/**
- * Hook customizado para buscar dados de personagem.
- * @param characterId O ID do personagem para buscar.
- * @returns Um objeto contendo os dados, status de carregamento e erro.
- */
 export const useCharacterData = (characterId: string) => {
   // O estado que armazena os dados, tipado como CharacterData ou null
   const [characterData, setCharacterData] = useState<CharacterData | null>(null);

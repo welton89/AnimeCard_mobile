@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { router } from 'expo-router'; //
    
 
-import { Character, Anime } from '../services/types'; 
-import { useData } from '../services/DataContext'; 
+import { Character, Anime } from '@app/_services/types';; 
+import { useData } from '@app/_services/DataContext';; 
 import { ImageCarousel } from './ImageCarrousel'; 
 import { AppTheme } from '@app/themes/themes';
 

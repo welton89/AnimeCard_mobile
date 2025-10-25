@@ -10,7 +10,7 @@ import {
 import { Searchbar, useTheme } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
 
-import { AnimeApiResponse, AnimeData, } from '@app/services/types'
+import { AnimeApiResponse, AnimeData, } from '@app/(services)/types'
 import {AnimeCardApi} from '@components/animeCardApi'
 
 const BASE_URL = 'https://api.jikan.moe/v4/anime?order_by=popularity&sfw=true';

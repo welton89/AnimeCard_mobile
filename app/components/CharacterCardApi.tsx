@@ -1,11 +1,11 @@
-import { AnimeData, Anime } from "@app/services/types";
+import { AnimeData, Anime } from "@app/(services)/types";
 import { memo, useState } from "react";
 import { View, Text,Image, StyleSheet, Dimensions, Alert } from "react-native";
 import {  ActivityIndicator, Button, Dialog, IconButton, Portal, useTheme} from "react-native-paper";
 import { AppTheme } from '@app/themes/themes';
-import { useData } from '@app/services/DataContext';
+import { useData } from '@app/(services)/DataContext';
 import { router } from "expo-router";
-import { getAnimeCharacters, JikanCharacter } from '@app/services/jikanApi'; // Sua nova API
+import { getAnimeCharacters, JikanCharacter } from '@app/(services)/jikanApi'; // Sua nova API
 
 const { width } = Dimensions.get('window');
 

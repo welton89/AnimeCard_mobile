@@ -1,9 +1,9 @@
 
 
 import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
-import type { Anime, Character } from "@app/services/types";
-import * as api from "@app/services/api"; // Certifique-se de que a importação da API está aqui
-import { AnimeRepository, CharRepository } from '@app/services/Database/SettingsRepository';
+import type { Anime, Character } from "@app/_services/types";
+import * as api from "@app/_services/api"; // Certifique-se de que a importação da API está aqui
+import { AnimeRepository, CharRepository } from '@app/_services/Database/SettingsRepository';
 import { useSettingsStore } from '@app/hooks/useSettingsStore';
 import { ActivityIndicator, MD2Colors, Text } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';

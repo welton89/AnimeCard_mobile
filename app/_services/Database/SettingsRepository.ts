@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { Settings, SettingDBItem, defaultSettings } from '@app/types/config'; 
-import { Character, Anime } from '@app/services/types'
+import { Character, Anime } from '@app/_services/types'
 
 const DB_NAME = 'app.db';
 let db: SQLite.SQLiteDatabase | null = null;

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { FlatList, View, Text, ListRenderItem } from 'react-native';
 import { ActivityIndicator, useTheme, Searchbar } from 'react-native-paper';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { getAnimeCharacters, JikanCharacter } from '@app/services/jikanApi';
+import { getAnimeCharacters, JikanCharacter } from '@app/_services/jikanApi';
 import { AppTheme } from '@app/themes/themes';
 import { CharCardApi } from '@components/CharacterCardApi';
 

@@ -5,6 +5,7 @@ export interface Settings {
   name: string;
   API: string; // URL da API
   Token: string;
+  gemini: string;
   Thema: 'light' | 'dark';
   Colors: string; // Exemplo: string JSON de cores
 }
@@ -17,10 +18,11 @@ export interface SettingDBItem {
 
 // Valor inicial padrão
 export const defaultSettings: Settings = {
-  name: 'Usuário Padrão',
+  name: '',
   API: '',
   Token: '',
-  Thema: 'light',
+  gemini: '',
+  Thema: 'dark',
   Colors: JSON.stringify({
     primary: '#6200ee',
     secondary: '#03dac4',

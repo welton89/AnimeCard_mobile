@@ -2,7 +2,7 @@
 import type { Anime, Character } from "./types";
 import { waitForSettingsInitialization } from '@app/hooks/useSettingsStore';
 
-const CONFIG_STORAGE_KEY = 'app_config';
+// const CONFIG_STORAGE_KEY = 'app_config';
 const DEFAULT_PATH_ANIME = 'animes';
 const DEFAULT_PATH_CHARACTER = 'personagens';
 

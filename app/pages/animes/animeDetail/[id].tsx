@@ -1,31 +1,32 @@
-import { ScrollView, StyleSheet, View, Text, Image, Alert } from 'react-native';
-import { ActivityIndicator, Button, Dialog, IconButton, Portal, useTheme } from 'react-native-paper';
+import { ScrollView, StyleSheet, View, Text, Alert } from 'react-native';
+import { ActivityIndicator, Button, Dialog, Portal, useTheme } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
-import { useData } from '@app/services/DataContext';
+import { useData } from '@app/_services/DataContext';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Character, Anime, AnimeApiResponse, AnimeData,JikanImages, Aired, Trailer } from '@app/services/types'; 
+import { Anime, AnimeData,JikanImages, Aired, Trailer } from '@app/_services/types'; 
 import { ImageCarousel } from '@components/ImageCarrousel';
 import { useState, useEffect } from 'react';
 import WebViewYoutubeModal from '@components/videoModal';
-import { CreateUpdateModal } from '@components/createUpdateModal';
+import  CreateUpdateModal  from '@components/createUpdateModal';
+import { useTranslator } from '@app/hooks/useTranslator';
 
 
 
 export default function AnimeDetail() {
   
   const theme = useTheme() as AppTheme; 
-  const { animes, setAnimes, addAnime, delAnime } = useData();
+  const { animes,delAnime } = useData();
   const [ animeJ, setAnimeJ ] = useState<AnimeData>();
   const [ animeIMG, setAnimeIMG ] = useState<string>();
-  const [creatAnime, setcreatAnime] = useState(false);
   const [visible, setVisible] = useState(false);
   const [visibleDel, setVisibleDel] = useState(false);
   const [modalVideo, setModalVideo] = useState(false);
+  const { translatedText, isLoading, translate, setTranslatedText } = useTranslator();
   
   const { id } = useLocalSearchParams<{ id: string }>();
   const anime = animes.find(a => a.id.toString() == id);
   const imageUris =  anime?.images.split("\n").filter((uri) => uri.trim() !== "")
-   const startYear = animeJ?.aired?.from ? new Date(animeJ?.aired?.from).getFullYear() : 'N/A';
+  // const [about, setAbout] = useState(anime?.description || animeJ?.synopsis || '');
   const hideDialog = () => setVisible(false);
   const hideVideo = () => setModalVideo(false);
   const hideDialogDel = () => setVisibleDel(false);
@@ -92,6 +93,8 @@ async function fetchAnimeById(id: string): Promise<AnimeData | null> {
 useEffect(()=>{
   fetchAnimeById(id)
 },[])
+
+
   const handleViewcharacters = () => {
     if (id) {
       router.push(`/pages/characters/listChars/${id.replace('.','')}`); 
@@ -100,26 +103,15 @@ useEffect(()=>{
     }
   };
 
-  const headleSetAnime = async (anime:AnimeData)=> {
-    setcreatAnime(true)
-    const novoAnime:Anime = {
-        id: anime.mal_id.toString(),
-        name: anime.title_english || anime.title,
-        description: anime.synopsis!,
-        images: animeJ?.images.jpg.toString() || '',
-    };
-
-    try{
-      await addAnime(novoAnime);
-      setcreatAnime(false)
-      setVisible(false)
-      Alert.alert("Tudo Pronto!",`${novoAnime.name} foi adicionado ao seu servidor`)
-
-    }catch(e){
-      setcreatAnime(false)
-      setVisible(false)
-      Alert.alert("ALgo de errado não tá certo! - "+e)
+  const headleTrans = async ()=> {
+    if (anime?.description!.trim() != '' || animeJ?.synopsis!.trim() != '') {
+      translate(anime?.description || animeJ?.synopsis || '')
     }
+    await translate(anime?.description || animeJ?.synopsis!);
+}
+
+  const headleOriginal = async ()=> {
+  setTranslatedText(null)
 }
 
 
@@ -216,11 +208,27 @@ const headleDel = async () => {
             >
                 Ver Personagens
             </Button>
-        <Text style={[styles.sectionTitle, { color: theme.colors.onSurfaceVariant, marginTop: 20 }]}>
+
+
+
+        <View  style={{flex:1, flexDirection:'row', marginTop: 20,alignContent:'center', width:'100%', justifyContent:'space-between'}} >
+
+        <Text style={[styles.sectionTitle, { color: theme.colors.onSurfaceVariant, marginTop: 0 }]}>
           Sinopse
         </Text>
+
+     {   isLoading ?
+        <ActivityIndicator animating={true} color={theme.colors.primary} style={{ margin: 2 }} />
+              :
+        <Button  onPress={translatedText ? headleOriginal : headleTrans}
+              mode= 'text'
+              style={{   marginRight: -8,  }}>
+              { translatedText ? 'Original' : 'Traduzir'}
+
+        </Button>}
+        </View>
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
-          {anime?.description || animeJ?.synopsis || 'Nenhuma sinopse detalhada fornecida.'}
+          {translatedText || anime?.description || animeJ?.synopsis || 'Nenhuma sinopse detalhada fornecida.'}
         </Text>
 
             { 
@@ -258,6 +266,7 @@ const headleDel = async () => {
         type={anime ? 'anime' : 'animeApi'}
         item={!anime ? animeJ! :anime}
         operation={anime ? 'update' : 'create'} 
+        traslate={translatedText}
         onClose={hideDialog } 
  />
 
@@ -278,30 +287,6 @@ const headleDel = async () => {
         </Dialog.Actions>
       </Dialog>
     </Portal>
-
-          {/* <Portal>
-    <Dialog 
-      visible={visible} 
-      onDismiss={hideDialog} 
-      style={{paddingHorizontal:25,borderRadius: 12,}}
-      theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.8)'}}}
-    >
-
-         <Text style={styles.title} numberOfLines={3} ellipsizeMode="tail">
-         Adicionar {animeJ?.title_english || animeJ?.title} ao seu catálogo pessoal?
-        </Text>
-        {
-            creatAnime ? 
-             <ActivityIndicator style={{margin:15}} animating={true} color={theme.colors.primary} />
-             :
-
-            <Dialog.Actions>
-          <Button onPress={() => setVisible(!visible)}>Não adicionar</Button>
-          <Button onPress={() => headleSetAnime(animeJ!)}>Sim, adicionar</Button>
-        </Dialog.Actions>
-        }
-      </Dialog>
-    </Portal> */}
 
 
     <WebViewYoutubeModal videoUrl={animeJ?.trailer?.embed_url || ''}

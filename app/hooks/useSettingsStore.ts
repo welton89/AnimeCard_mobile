@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { Settings, defaultSettings } from '@app/types/config';
-import { SettingsRepository } from '@app/services/Database/SettingsRepository';
+import { SettingsRepository } from '@app/_services/Database/SettingsRepository';
 
 
 

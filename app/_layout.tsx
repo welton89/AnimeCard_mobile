@@ -6,7 +6,7 @@ import { BottomNavigation, Provider as PaperProvider } from 'react-native-paper'
 import { Stack, useRouter } from 'expo-router';
 import { useSettingsStore } from '@app/hooks/useSettingsStore';
 
-import { DataProvider } from '@app/services/DataContext';
+import { DataProvider } from '@app/_services/DataContext';
 import { ThemeContextProvider, useThemeToggle } from '@app/contexts/ThemeContext'; // Seu contexto de tema
 
 export default function App() {

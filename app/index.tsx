@@ -8,7 +8,7 @@ import { ThemeContextProvider, useThemeToggle } from '@app/contexts/ThemeContext
 import PersonagemPage from '@app/pages/personagemPage';
 import ExplorerPage from '@app/pages/animes/listAnimes/explorerPage';
 import AnimePage from '@app/pages/animePage';
-import {SettingsPage} from '@app/pages/formePage';
+import SettingsPage from '@app/pages/formePage';
 
 import { AppTheme } from '@app/themes/themes';
 // const { width: SCREEN_WIDTH } = Dimensions.get('window');

@@ -1,14 +1,15 @@
 import { ScrollView, StyleSheet, View, Text, Alert } from 'react-native';
 import { ActivityIndicator, Button, Dialog, Portal, useTheme } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
-import { useData } from '@app/services/DataContext';
+import { useData } from '@app/_services/DataContext';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Character } from '@app/services/types'; 
+import { Character } from '@app/_services/types'; 
 import { ImageCarousel } from '@components/ImageCarrousel';
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useCharacterData } from '@app/hooks/useCharacterData';
-import { CharacterData } from '@app/types/CharacterData';
-import {CreateUpdateModal} from '@app/components/createUpdateModal'
+import CreateUpdateModal from '@app/components/createUpdateModal'
+import { useTranslator } from '@app/hooks/useTranslator';
+
 
 export default function CharDetail() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,23 +21,34 @@ export default function CharDetail() {
   const [visibleDel, setVisibleDel] = useState(false);
 
   
-  const { characterData, loading, error } = useCharacterData(id);
-  const char:Character  = characters.find(a => a.id.toString() == id)!;
-  const charImg = char?.images.split("\n").filter((uri) => uri.trim() !== "")
+  const { characterData, loading, error} = useCharacterData(id);
+  // const char:Character  = characters.find(a => a.id.toString() == id)!;
+  // const [char, setChar] = useState<Character | undefined>(characters.find(a => a.id.toString() == id));
+  // const charImg = char?.images.split("\n").filter((uri) => uri.trim() !== "")
   const imageUris = [characterData?.images.jpg.image_url]
-  //   const imageUrl = animeJ?.images?.jpg?.large_image_url || animeJ?.images?.jpg?.small_image_url || 'https://placehold.co/80x120/cccccc/333333?text=Sem+Capa';
-  const [formData, setFormData] = useState<Character>({
-    id:'',
-    name: characterData?.name || '',
-    description: '',
-    images: '',
-    animeId:''
-  });
+  const { translatedText, isLoading, translate, setTranslatedText } = useTranslator();
 
+const char = useMemo(() => {
+        return characters.find(a => a.id.toString() === id);
+    }, [characters, id]); // Depende do array 'characters' vindo do DataContext
 
+    // 2. Garante que 'charImg' também reaja à mudança de 'char'.
+    const charImg = useMemo(() => {
+        // Se 'char' for undefined (após uma exclusão, por exemplo), retorna um array vazio ou o fallback
+        return char?.images.split("\n").filter((uri) => uri.trim() !== "") || [];
+    }, [char]);
   
   const hideDialog = () => setVisible(false);
+  const headleTrans = async ()=> {
+    if (char?.description!.trim() != '' || characterData?.about!.trim() != '') {
+      translate(char?.description || characterData?.about || '')
+    }
+    await translate(char?.description || characterData?.about!);
+}
 
+  const headleOriginal = async ()=> {
+  setTranslatedText(null)
+}
  
 
 
@@ -106,11 +118,24 @@ const headleDel = async () => {
 
 
        
-        <Text style={[styles.sectionTitle, { color: theme.colors.onSurfaceVariant, marginTop: 20 }]}>
-          Sobre
-        </Text>
+         <View  style={{flex:1, flexDirection:'row', marginTop: 20,alignContent:'center', width:'100%', justifyContent:'space-between'}} >
+        
+                <Text style={[styles.sectionTitle, { color: theme.colors.onSurfaceVariant, marginTop: 0 }]}>
+                  Sinopse
+                </Text>
+        
+             {   isLoading ?
+                <ActivityIndicator animating={true} color={theme.colors.primary} style={{ margin: 2 }} />
+                      :
+                <Button  onPress={translatedText ? headleOriginal : headleTrans}
+                      mode= 'text'
+                      style={{   marginRight: -8,  }}>
+                      { translatedText ? 'Original' : 'Traduzir'}
+        
+                </Button>}
+                </View>
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
-          { char?.description || characterData?.about || 'Nada Sobre'}
+          {  translatedText || char?.description || characterData?.about || 'Nada Sobre'}
         </Text>
 
             
@@ -146,6 +171,7 @@ const headleDel = async () => {
         type={char ? 'char' : 'charApi'}
         item={!char ? characterData :char}
         operation={char ? 'update' : 'create'} 
+        traslate={translatedText}
         onClose={hideDialog } 
  />
 

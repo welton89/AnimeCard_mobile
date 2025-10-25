@@ -1,10 +1,10 @@
 import { FlatList, ListRenderItem, View } from 'react-native';
-import { useData } from '@app/services/DataContext';
+import { useData } from '@app/_services/DataContext';
 import { ItemCard } from '@components/itemCard';
 import { ActivityIndicator, Searchbar,  useTheme, Text } from 'react-native-paper';
 import { useState } from 'react';
 import { AppTheme } from '@app/themes/themes';
-import { Character } from '@app/services/types';
+import { Character } from '@app/_services/types';
 
 export default function PersonagemPage() {
   const { characters, loading } = useData();
@@ -14,7 +14,7 @@ export default function PersonagemPage() {
   const renderItem: ListRenderItem<Character> = ({ item }) => <ItemCard item={item}/>;
 
   return (
-    
+
             <View style={{ 
               flex: 1,
               backgroundColor: theme.colors.background,

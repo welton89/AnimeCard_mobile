@@ -2,10 +2,10 @@ import { FlatList, ListRenderItem, View } from 'react-native';
 import { ActivityIndicator, Searchbar,  useTheme, Text } from 'react-native-paper';
 import { useState } from 'react';
 
-import { useData } from '@app/services/DataContext';
+import { useData } from '@app/_services/DataContext';
 import { ItemCard } from '@components/itemCard';
 import { AppTheme } from '@app/themes/themes';
-import { Anime } from '@app/services/types';
+import { Anime } from '@app/_services/types';
 
 
 export default  function AnimePage() {
