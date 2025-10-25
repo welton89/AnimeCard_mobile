@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useCharacterData } from '@app/hooks/useCharacterData';
 import CreateUpdateModal from '@app/components/createUpdateModal'
 import { useTranslator } from '@app/hooks/useTranslator';
+import { useSettingsStore } from '@app/hooks/useSettingsStore';
 
 
 export default function CharDetail() {
@@ -27,6 +28,7 @@ export default function CharDetail() {
   // const charImg = char?.images.split("\n").filter((uri) => uri.trim() !== "")
   const imageUris = [characterData?.images.jpg.image_url]
   const { translatedText, isLoading, translate, setTranslatedText } = useTranslator();
+    const { settings, isInitialized, initialize, updateSetting } = useSettingsStore();
 
 const char = useMemo(() => {
         return characters.find(a => a.id.toString() === id);
@@ -129,6 +131,7 @@ const headleDel = async () => {
                       :
                 <Button  onPress={translatedText ? headleOriginal : headleTrans}
                       mode= 'text'
+                      disabled={settings.gemini != '' ? false : true}
                       style={{   marginRight: -8,  }}>
                       { translatedText ? 'Original' : 'Traduzir'}
         

@@ -9,6 +9,8 @@ import { useState, useEffect } from 'react';
 import WebViewYoutubeModal from '@components/videoModal';
 import  CreateUpdateModal  from '@components/createUpdateModal';
 import { useTranslator } from '@app/hooks/useTranslator';
+import { useSettingsStore } from '@app/hooks/useSettingsStore';
+
 
 
 
@@ -26,11 +28,12 @@ export default function AnimeDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const anime = animes.find(a => a.id.toString() == id);
   const imageUris =  anime?.images.split("\n").filter((uri) => uri.trim() !== "")
+    const { settings, isInitialized, initialize, updateSetting } = useSettingsStore();
+
   // const [about, setAbout] = useState(anime?.description || animeJ?.synopsis || '');
   const hideDialog = () => setVisible(false);
   const hideVideo = () => setModalVideo(false);
   const hideDialogDel = () => setVisibleDel(false);
-  console.log('status do anime',anime?.status)
  
 
 async function fetchAnimeById(id: string): Promise<AnimeData | null> {
@@ -217,11 +220,19 @@ const headleDel = async () => {
           Sinopse
         </Text>
 
+        {/* {
+          settings.gemini != '' ?
+        } */}
+
      {   isLoading ?
+
+
         <ActivityIndicator animating={true} color={theme.colors.primary} style={{ margin: 2 }} />
               :
         <Button  onPress={translatedText ? headleOriginal : headleTrans}
               mode= 'text'
+              disabled={settings.gemini != '' ? false : true}
+
               style={{   marginRight: -8,  }}>
               { translatedText ? 'Original' : 'Traduzir'}
 
