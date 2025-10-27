@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BottomNavigation,  FAB, useTheme,  Provider as PaperProvider } from 'react-native-paper';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 // import { DataProvider } from '@app/services/DataContext';
 import { ThemeContextProvider, useThemeToggle } from '@app/contexts/ThemeContext';
@@ -18,7 +18,6 @@ const routes = [
     { key: 'personagens', title: 'Personagens', focusedIcon: 'account-group', unfocusedIcon: 'account-group-outline' },
     { key: 'animes', title: 'Animes', focusedIcon: 'cat', unfocusedIcon: 'cat' },
     { key: 'explore', title: 'Explorar', focusedIcon: 'cloud-search', unfocusedIcon: 'cloud-search-outline' },
-    // { key: 'settings3', title: 'Opções3', focusedIcon: 'cog', unfocusedIcon: 'cog-outline' },
     { key: 'settings', title: 'Opções', focusedIcon: 'cog', unfocusedIcon: 'cog-outline' },
 ];
 
@@ -27,17 +26,11 @@ const renderScene = BottomNavigation.SceneMap({
     personagens: PersonagemPage,
     animes: AnimePage,
     explore: ExplorerPage,
-    // settings3: FormPage,
     settings: SettingsPage,
-    //  () => (
-    //     <View style={styles.fillerPage}>
-    //         <Text style={{ color: 'black' }}>Conteúdo da Terceira Aba</Text>
-    //     </View>
-    // ),
+
 });
 
 export default function AppContent  ()  {
-    const { toggleTheme } = useThemeToggle();
     const [index, setIndex] = useState(0);
     const [navigationRoutes] = useState(routes);
     const router = useRouter();
@@ -65,7 +58,6 @@ export default function AppContent  ()  {
                 navigationState={{ index, routes: navigationRoutes }}
                 onIndexChange={setIndex}
                 renderScene={renderScene}
-                // Ajustes de estilo para a barra inferior
                 barStyle={[styles.bottomBar, { backgroundColor: theme.colors.elevation.level2 }]}
                 // Customização opcional dos ícones/cores se necessário:
                 // getLabelText={({ route }) => route.title}

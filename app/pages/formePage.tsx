@@ -1,16 +1,24 @@
 
-import React, { useEffect } from 'react';
-import { View, Text, TextInput, Switch, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, Switch, ScrollView, ActivityIndicator, StyleSheet, ColorValue } from 'react-native';
 import { useSettingsStore } from '@app/hooks/useSettingsStore';
 import { ThemeContextProvider, useThemeToggle } from '@app/contexts/ThemeContext'; // Seu contexto de tema
 import { AppTheme } from '@app/themes/themes';
 import { useTheme } from 'react-native-paper';
+import ColorPicker from '@components/ui/ColorPicker';
 
 
 export default function SettingsPage() {
   const { settings, isLoading, isInitialized, initialize, updateSetting } = useSettingsStore();
   const { toggleTheme } = useThemeToggle();
   const theme = useTheme() as AppTheme; 
+
+  const [currentColor, setCurrentColor] = useState<ColorValue>('#3357FF');
+
+  const handleColorChange = (color: ColorValue) => {
+    console.log('Nova cor selecionada:', color);
+    setCurrentColor(color);
+  };
   
 
   useEffect(() => {
@@ -108,7 +116,7 @@ export default function SettingsPage() {
           thumbColor={settings.Thema === 'dark' ? theme.colors.primary : '#f4f3f4'} />
       </View>
 
-      {/* <Text style={styles.label}>Cor Primária</Text> */}
+      <Text style={styles.label}>Cor Primária</Text>
       {/* <TextInput
         style={styles.input}
         value={JSON.parse(settings.Colors).primary} // Exemplo: lendo o JSON
@@ -117,6 +125,14 @@ export default function SettingsPage() {
           handleTextChange('Colors', newColors);
         } }
         placeholder="#6200ee" /> */}
+
+
+        <ColorPicker 
+        initialColor={currentColor}
+        onColorChange={(text)=>{  const newColors = JSON.stringify({ ...JSON.parse(settings.Colors), primary: text });
+          handleTextChange('Colors', newColors);}}
+        title="Escolha a Cor Principal"
+      />
 
     </ScrollView>
   );

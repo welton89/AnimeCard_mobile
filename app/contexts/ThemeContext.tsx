@@ -11,7 +11,7 @@ import React, {
 import { Appearance, useColorScheme } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import { LightTheme, DarkTheme, AppTheme } from '@app/themes/themes';
-import { waitForSettingsInitialization } from '@app/hooks/useSettingsStore';
+import { waitForSettingsInitialization, useSettingsStore } from '@app/hooks/useSettingsStore';
 
 
 // 1. Definição do Tipo para o Contexto
@@ -20,6 +20,12 @@ interface ThemeContextProps {
   theme: AppTheme;
   toggleTheme: () => void;
 }
+
+const isValidHexColor = (color: unknown): color is string => {
+  if (typeof color !== 'string') return false;
+  return /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(color);
+};
+
 // 2. Criação do Contexto com um valor inicial que corresponde ao tipo
 export const ThemeContext = createContext<ThemeContextProps>({
   isDark:  true,
@@ -36,11 +42,13 @@ interface ThemeProviderProps {
 export const ThemeContextProvider: React.FC<ThemeProviderProps> = ({
   children,
 }) => {
-  // Use o useColorScheme do React Native para pegar a preferência do sistema
+  const DEFAULT_PRIMARY_COLOR = '#ff9d00ff';
   const colorScheme = useColorScheme(); 
   
-  // Inicializa o estado com base na preferência do sistema ou default para 'light'
   const [isDark, setIsDark] = useState(colorScheme === 'dark');
+  const [colorPrimary, setColorPrimary] = useState(DEFAULT_PRIMARY_COLOR)
+    const { settings, isLoading, isInitialized, initialize, updateSetting } = useSettingsStore();
+  
 
   // Função para alternar o tema
   const toggleTheme = () => {
@@ -50,33 +58,53 @@ export const ThemeContextProvider: React.FC<ThemeProviderProps> = ({
 
 
 
-
-useEffect(() => {
+  useEffect(() => {
     const loadSettings = async () => {
       try {
         const settings = await waitForSettingsInitialization();
-        const initialIsDark = settings.Thema === 'dark';
         
+        // A. Define se o tema é escuro/claro (do banco)
+        const initialIsDark = settings.Thema === 'dark';
         setIsDark(initialIsDark);
-        // setTheme(initialIsDark ? DarkTheme : LightTheme);
+
+        // B. Define a cor primária (do banco)
+        const customPrimaryColor = JSON.parse(settings.Colors).primary;
+        
+        if (isValidHexColor(customPrimaryColor)) {
+            setColorPrimary(customPrimaryColor);
+        } else {
+            console.warn(`Cor primária inválida ('${customPrimaryColor}') carregada das configurações. Usando padrão: ${DEFAULT_PRIMARY_COLOR}`);
+            setColorPrimary(DEFAULT_PRIMARY_COLOR);
+        }
+
       } catch (error) {
-        console.error("Erro ao carregar configurações de tema:", error);
-      } finally {
-        // setIsReady(true); // Marca que o carregamento inicial está completo
+        // Se houver erro no JSON.parse ou na busca, garante que o app continue com a cor padrão
+        console.error("Erro ao carregar ou processar configurações de tema:", error);
+        setColorPrimary(DEFAULT_PRIMARY_COLOR);
       }
     };
 
     loadSettings();
-  }, []);
+  }, [settings.Colors]);
 
 
+  const theme = useMemo(() => {
+    // 1. Escolhe a base (DarkTheme ou LightTheme)
+    const baseTheme = isDark ? DarkTheme : LightTheme;
 
+    // 2. Cria uma CÓPIA do tema base (evita mutação) e aplica a cor primária
+    // Usamos o spread operator para copiar e sobrescrever as cores
+    const customTheme = {
+        ...baseTheme,
+        colors: {
+            ...baseTheme.colors,
+            primary: colorPrimary, // Sobrescreve a cor primária
+        },
+    };
+    
+    return customTheme as AppTheme;
 
-
-
-  // Determina qual tema usar com base no estado 'isDark'
-  const theme = useMemo(() => (isDark ? DarkTheme : LightTheme), [isDark]);
-
+  }, [isDark, colorPrimary]); 
   // Valor do contexto
   const contextValue: ThemeContextProps = useMemo(
     () => ({
@@ -86,15 +114,6 @@ useEffect(() => {
     }),
     [isDark, theme]
   );
-
-
-
-
-
-
-
-
-
 
 
 
