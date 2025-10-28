@@ -337,7 +337,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, position: 'relative' }}>
                             <TextInput
                                 label="URL Imagem"
-                                defaultValue={newImageUrl} 
+                                value={newImageUrl} 
                                 mode="outlined"
                                 onChangeText={setNewImageUrl} 
                                 placeholder="Cole o link da imagem aqui"
