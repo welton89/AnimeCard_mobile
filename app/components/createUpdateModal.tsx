@@ -8,6 +8,7 @@ import { AppTheme } from '@app/themes/themes';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useData } from '@app/_services/DataContext';
 import {ImageScroller} from '@components/ImageScroller'
+import {Filter} from '@app/components/Filter'
 
 
 
@@ -30,6 +31,8 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
     const theme = useTheme() as AppTheme;
     const [internalVisible, setInternalVisible] = useState(false); // Inicia como false
     const [loading, setloading] = useState(false); // Inicia como false
+    const [filter, setFilter] = useState('list');
+
 
 
     const initialData = useMemo(() => {
@@ -47,6 +50,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                 };
             case 'anime':
                 const anime = item as (Anime);
+                setFilter(anime.status!)
                 return {
                     id: anime.id,
                     name: anime.name,
@@ -142,8 +146,8 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
 
     // Função que será chamada ao fechar o modal
     const handleDismiss = () => {
-        setInternalVisible(false); // Fecha o estado interno
-        onClose(false); // ⭐️ Notifica o componente pai para atualizar seu estado
+        setInternalVisible(false); 
+        onClose(false); 
     };
 
     async function headleSetAnime() {
@@ -153,7 +157,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
             name: formData.name!,
             description: formData.description!,
             images: imageLinks.join('\n'), //formData.images!.toString(),
-            status: formData.status
+            status: filter
         };
         try {
             await addAnime(newAnime);
@@ -176,7 +180,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
             id: formData.id!.toString(),
             name: formData.name!,
             description: formData.description!,
-            images: imageLinks.join('\n'), //formData.images!.toString(),
+            images: imageLinks.join('\n'), 
             animeId: formData.animeId!.toString()
         };
         try {
@@ -200,7 +204,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
             id: formData.id!.toString(),
             name: formData.name!,
             description: formData.description!,
-            images: imageLinks.join('\n'), //formData.images!.toString(),
+            images: imageLinks.join('\n'), 
             animeId: formData.animeId!.toString()
         };
         try {
@@ -226,7 +230,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
             name: formData.name!,
             description: formData.description!,
             images: imageLinks.join('\n'), // formData.images!.toString(),
-            status: formData.status
+            status: filter
         };
         try {
             await updateAnime(newAnime);
@@ -317,6 +321,17 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                                 backgroundColor: theme.colors.surfaceVariant,
                             }} />
 
+
+                            {
+                                type == 'anime' || type == 'animeApi' ?
+                                <View style={{marginBottom:10}}>
+                                     
+                            <Filter filter={filter}
+                            edit={true}
+                            setFilter={setFilter}/>
+                            </View>
+                            : null
+                        }
         
 
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, position: 'relative' }}>

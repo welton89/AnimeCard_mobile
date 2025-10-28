@@ -6,41 +6,51 @@ import { useData } from '@app/_services/DataContext';
 import { ItemCard } from '@components/itemCard';
 import { AppTheme } from '@app/themes/themes';
 import { Anime } from '@app/_services/types';
+import {Filter} from '@app/components/Filter'
 
 
 export default  function AnimePage() {
     const { animes, loading } = useData();
     const [searchQuery, setSearchQuery] = useState('');
+    const [filter, setFilter] = useState('all');
     const theme = useTheme() as AppTheme; 
+
+
+    const filteredAnimes = animes.filter((val) => {
+        const matchesSearch = searchQuery === '' || val.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesFilter = filter === 'all' || val.status?.includes(filter);
+
+        return matchesSearch && matchesFilter;
+    });
 
     const renderItem: ListRenderItem<Anime> = ({ item }) => <ItemCard item={item}/>;
     return (
 
         <View style={{ 
               flex: 1,
-              backgroundColor: theme.colors.background,
+              //  filter: 'blur(10px)',
               justifyContent:'center',
+              position:'relative',
               alignItems:'center',
               gap:10,
               }}>
                
+                <View style={{width:'95%', height:108, gap:10}}>
                    <Searchbar
-                    placeholder={`Pesquisar entre os ${animes.length} Animes`}
+                    placeholder={`Pesquisar entre os ${filteredAnimes.length} Animes`}
                     onChangeText={setSearchQuery}
                     value={searchQuery}
-                    style={{width:'95%',backgroundColor:theme.colors.surfaceDisabled }}
-                  />
+                    style={{backgroundColor:theme.colors.surfaceDisabled }}
+                    />
+
+                    <Filter filter={filter}
+                    setFilter={setFilter}
+                    />
+                    </View>
            
                 <FlatList
                   data={
-                       animes.filter((val)=>{
-                          if(searchQuery === ''){
-                            return val
-                          }else if(val.name.toLowerCase().includes(searchQuery.toLowerCase())){
-                            return val
-
-                          }
-                        })
+                       filteredAnimes
                   }
                   extraData={animes}
                   renderItem={renderItem}
