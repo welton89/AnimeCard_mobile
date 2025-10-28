@@ -1,7 +1,7 @@
 import { AnimeData, Anime } from "@app/_services/types";
 import { memo, useState } from "react";
 import { View, Text,Image, StyleSheet, Dimensions, Alert, TouchableOpacity } from "react-native";
-import {  ActivityIndicator, Button, Dialog, IconButton, Portal, useTheme} from "react-native-paper";
+import {  ActivityIndicator, Button, Dialog, Icon, IconButton, Portal, useTheme} from "react-native-paper";
 import { AppTheme } from '@app/themes/themes';
 import { useData } from '@app/_services/DataContext';
 import { router } from "expo-router";
@@ -17,15 +17,11 @@ export const AnimeCardApi: React.FC<AnimeCardProps> = memo(({ anime }) => {
     const imageUrl = anime.images?.jpg?.large_image_url || anime.images?.jpg?.small_image_url || 'https://placehold.co/80x120/cccccc/333333?text=Sem+Capa';
     const hasScore = anime.score !== null && anime.scored_by !== null && anime.scored_by > 0;
     const startYear = anime.aired?.from ? new Date(anime.aired.from).getFullYear() : 'N/A';
-    
     // Mapeia os objetos de gênero para uma string simples
     const genreList = anime.genres.map(g => g.name).join(', ');
     const theme = useTheme() as AppTheme; 
-    const [visible, setVisible] = useState(false);
-
-
-
-
+    const {animes} = useData()
+    const isAnimeInList = animes.some(item => item.id.toString() === anime.mal_id.toString());
 
 
 
@@ -99,10 +95,7 @@ const styles = StyleSheet.create({
 
       const handleViewAnime = () => {
         if (anime.mal_id) {
-    
-          // 🎯 Rota configurada: /characters/[id].tsx
           router.push(`/pages/animes/animeDetail/${anime.mal_id}`); 
-          // router.push(`/pages/characters/${item.id}`); 
         } else {
           Alert.alert('Erro', 'ID do Anime não encontrado para navegação.');
         }
@@ -149,6 +142,20 @@ const styles = StyleSheet.create({
           <Text style={styles.noRatingText}>Sem avaliação disponível</Text>
         )}
       </View>
+
+
+
+
+{isAnimeInList &&
+  
+       <Icon
+    source="book-check-outline"
+    color={theme.colors.primary}
+    size={28}
+  />
+}
+
+
     
     </View>
 

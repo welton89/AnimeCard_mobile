@@ -16,6 +16,15 @@ import { AnimeCardApi } from '@components/animeCardApi';
 // Importa o hook customizado
 import { useAnimeData } from '@app/hooks/useAnimeData'; 
 
+    function removeDuplicates(animes: AnimeData[]): AnimeData[] {
+    const uniqueMap = new Map<string, AnimeData>();
+    animes.forEach(anime => {
+        uniqueMap.set(anime.mal_id, anime);
+    });
+    return Array.from(uniqueMap.values());
+}
+
+
 
 const InfiniteScrollList: React.FC = () => {
     // 1. Estados de UI do componente
@@ -25,7 +34,7 @@ const InfiniteScrollList: React.FC = () => {
 
     // 2. Uso do Hook Customizado para obter dados e funções de lógica
     const { animes, isLoading, error, isInitialLoad, hasNextPage, handleLoadMore } = useAnimeData(searchTerm); 
-
+const animeData = removeDuplicates(animes)
     const styles = StyleSheet.create({
         container: {
             flex: 1,
@@ -138,7 +147,7 @@ const InfiniteScrollList: React.FC = () => {
             />
     
             <FlatList
-                data={animes}
+                data={animeData}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.mal_id.toString()}
                 // Lógica de Paginação Infinita: acionando a função do hook

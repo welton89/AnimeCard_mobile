@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimeApiResponse, AnimeData } from '@app/_services/types';
 
+
+
 // URLs de base
 const BASE_URL = 'https://api.jikan.moe/v4/anime?order_by=popularity&sfw=true';
 const SEARCH_BASE_URL = 'https://api.jikan.moe/v4/anime?sfw=true'; 
@@ -14,6 +16,8 @@ export const useAnimeData = (searchTerm: string) => {
     const [isThrottled, setIsThrottled] = useState(false); // Controla o intervalo entre chamadas
     const [error, setError] = useState<string | null>(null);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+
 
     const fetchData = useCallback(async (page: number, isNewSearch: boolean) => {
         console.log("termo de busca:    "+searchTerm)
@@ -90,6 +94,7 @@ export const useAnimeData = (searchTerm: string) => {
             console.log('Não há mais páginas para carregar.');
         }
     };
+
 
     return {
         animes,

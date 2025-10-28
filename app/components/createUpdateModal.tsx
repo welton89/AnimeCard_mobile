@@ -380,11 +380,12 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                 {operation == 'create' ?
 
                     <Button
+                     disabled={loading}
                         onPress={() => type == 'charApi' ?
                             headleSetChar() :
                             headleSetAnime()}
                         mode="contained" style={{ marginTop: 10 }}>
-                        {!loading ? 'Adicionar' : 'Adicionando'}
+                        {!loading ? 'Adicionar' : 'Adicionando...'}
                     </Button>
 
                     :
