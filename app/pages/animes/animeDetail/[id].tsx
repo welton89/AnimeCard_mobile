@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Text, Alert } from 'react-native';
+import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import { ActivityIndicator, Button, Dialog, Portal, useTheme } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
 import { useData } from '@app/_services/DataContext';
@@ -10,6 +10,7 @@ import WebViewYoutubeModal from '@components/videoModal';
 import  CreateUpdateModal  from '@components/createUpdateModal';
 import { useTranslator } from '@app/hooks/useTranslator';
 import { useSettingsStore } from '@app/hooks/useSettingsStore';
+import Toast from 'react-native-toast-message';
 
 
 
@@ -22,6 +23,8 @@ export default function AnimeDetail() {
   const [ animeIMG, setAnimeIMG ] = useState<string>();
   const [visible, setVisible] = useState(false);
   const [visibleDel, setVisibleDel] = useState(false);
+    const [apagando, setApagando] = useState(false);
+
   const [modalVideo, setModalVideo] = useState(false);
   const { translatedText, isLoading, translate, setTranslatedText } = useTranslator();
   
@@ -102,11 +105,16 @@ useEffect(()=>{
     if (id) {
       router.push(`/pages/characters/listChars/${id.replace('.','')}`); 
     } else {
-      Alert.alert('Erro', 'ID do Anime não encontrado para navegação.');
+        Toast.show({
+          type: 'error',
+          text1: 'Ops! 😬',
+          text2: `O id ${id} não foi encontrado.`,
+        });
     }
   };
 
   const headleTrans = async ()=> {
+
     if (anime?.description!.trim() != '' || animeJ?.synopsis!.trim() != '') {
       translate(anime?.description || animeJ?.synopsis || '')
     }
@@ -120,11 +128,24 @@ useEffect(()=>{
 
 const headleDel = async () => {
   const title = anime?.name
+  setApagando(true)
+  try{
   await delAnime(id)
-  hideDialogDel();
-  // router.back();
-    Alert.alert("Tudo Pronto!",`${title} apagado`)
-
+      setVisibleDel(false);
+      setApagando(false)
+         Toast.show({
+           type: 'info',
+           text1: 'Tudo Certo 😁👍',
+           text2: `${title} apagado!`,
+         });
+       }catch(e){
+         setApagando(false)
+          Toast.show({
+               type: 'error',
+               text1: 'Ops! Algo de errado não ta certo. 😬',
+               text2: `erro: ${e} `,
+          });
+       }
 };
 
 
@@ -288,16 +309,30 @@ const headleDel = async () => {
 
       </View>
         <Portal>
-      <Dialog visible={visibleDel} onDismiss={hideDialogDel}>
-        <Dialog.Icon icon="alert" />
-        <Dialog.Title style={styles.title}>Excluir</Dialog.Title>
+      <Dialog visible={visibleDel} onDismiss={()=>setVisibleDel(!visibleDel)}>
+        <Dialog.Icon icon="alert" size={40} />
         <Dialog.Content>
-          <Text >Tá certo diiso?</Text>
+          <Text style={[{ fontSize: 18,
+                  fontWeight: '400',
+                  color:theme.colors.secondary
+                  }]}>
+                    Apagar {anime?.name} do catálogo?
+            </Text>
         </Dialog.Content>
+{
+  apagando ?
+
+  <ActivityIndicator animating={true} color={theme.colors.primary} style={{marginBottom:10}}/>
+  
+                 
+  :
+
         <Dialog.Actions>
           <Button onPress={() => setVisibleDel(!visibleDel)}>Cancel</Button>
           <Button onPress={headleDel}>Apagar</Button>
         </Dialog.Actions>
+}
+
       </Dialog>
     </Portal>
 

@@ -58,6 +58,9 @@ export default function AppContent  ()  {
                 navigationState={{ index, routes: navigationRoutes }}
                 onIndexChange={setIndex}
                 renderScene={renderScene}
+                sceneAnimationEnabled={true}
+                sceneAnimationType='shifting'
+
                 barStyle={[styles.bottomBar, { backgroundColor: theme.colors.elevation.level2 }]}
                 // Customização opcional dos ícones/cores se necessário:
                 // getLabelText={({ route }) => route.title}

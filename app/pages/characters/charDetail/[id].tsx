@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Text, Alert } from 'react-native';
+import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import { ActivityIndicator, Button, Dialog, Portal, useTheme } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
 import { useData } from '@app/_services/DataContext';
@@ -10,6 +10,8 @@ import { useCharacterData } from '@app/hooks/useCharacterData';
 import CreateUpdateModal from '@app/components/createUpdateModal'
 import { useTranslator } from '@app/hooks/useTranslator';
 import { useSettingsStore } from '@app/hooks/useSettingsStore';
+import Toast from 'react-native-toast-message';
+
 
 type CharDetailParams = {
   id: string;      // Captura o primeiro parâmetro de rota
@@ -23,6 +25,7 @@ export default function CharDetail() {
   const { characters, delChar } = useData();
   const [visible, setVisible] = useState(false);
   const [visibleDel, setVisibleDel] = useState(false);
+  const [apagando, setApagando] = useState(false);
 
   
   const { characterData, loading, error} = useCharacterData(id);
@@ -50,10 +53,24 @@ export default function CharDetail() {
 
 const headleDel = async () => {
   const title = char?.name
-  await delChar(id)
-  setVisibleDel(false);
-  // router.back();
-    Alert.alert("Tudo Pronto!",`${title} apagado`)
+  setApagando(true)
+  try{
+    await delChar(id)
+    setVisibleDel(false);
+    setApagando(false)
+    Toast.show({
+      type: 'info',
+      text1: 'Tudo Certo 😁👍',
+      text2: `${title} apagado!`,
+    });
+  }catch(e){
+    setApagando(false)
+     Toast.show({
+          type: 'error',
+          text1: 'Ops! Algo de errado não ta certo. 😬',
+          text2: `erro: ${e} `,
+     });
+  }
 
 };
 
@@ -175,15 +192,29 @@ const headleDel = async () => {
 
    <Portal>
       <Dialog visible={visibleDel} onDismiss={()=>setVisibleDel(!visibleDel)}>
-        <Dialog.Icon icon="alert" />
-        <Dialog.Title style={styles.title}>Excluir</Dialog.Title>
+        <Dialog.Icon icon="alert" size={40} />
         <Dialog.Content>
-          <Text >Tá certo diiso?</Text>
+          <Text style={[{ fontSize: 18,
+                  fontWeight: '400',
+                  color:theme.colors.secondary
+                  }]}>
+                    Apagar {char?.name} do catálogo?
+            </Text>
         </Dialog.Content>
+
+        {
+  apagando ?
+
+  <ActivityIndicator animating={true} color={theme.colors.primary} style={{marginBottom:10}}/>
+  
+                 
+  :
+
         <Dialog.Actions>
           <Button onPress={() => setVisibleDel(!visibleDel)}>Cancel</Button>
           <Button onPress={headleDel}>Apagar</Button>
         </Dialog.Actions>
+}
       </Dialog>
     </Portal>
 

@@ -1,6 +1,7 @@
 
 import { Anime, AnimeData, Character } from '@app/_services/types';
 import { CharacterData } from '@app/types/CharacterData';
+import Toast from 'react-native-toast-message';
 
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { ActivityIndicator, Button, Card, Dialog, IconButton, Modal, Portal, useTheme,TextInput } from 'react-native-paper';
@@ -105,12 +106,20 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
         const url = newImageUrl.trim();
 
         if (url === '') {
-            Alert.alert('Atenção', 'Por favor, insira um link de imagem válido.');
+             Toast.show({
+                type: 'error',
+                text1: 'Ops! 😬',
+                text2: 'Por favor, insira um link de imagem válido.'
+                });
             return;
         }
 
         if (imageLinks.includes(url)) {
-            Alert.alert('Aviso', 'Esta imagem já foi adicionada.');
+             Toast.show({
+                type: 'error',
+                text1: 'Ops! 😬',
+                text2: 'Esta imagem já foi adicionada.',
+                });
             setNewImageUrl(''); // Limpa o campo mesmo assim
             return;
         }
@@ -163,18 +172,26 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
             await addAnime(newAnime);
             setloading(false);
             setInternalVisible(false);
-            Alert.alert('Criou, Anime', newAnime.name);
+             Toast.show({
+                type: 'success',
+                text1: 'Tudo Certo 😁👍',
+                text2: `${newAnime.name} Adicionado!`,
+            });
 
         } catch (e) {
             setloading(false);
             setInternalVisible(false);
-            console.log('Algo de errado não deu certo!!! - ', e);
-            Alert.alert('Algo de errado não deu certo!!! - ', `erro: ${e}`);
+             Toast.show({
+                type: 'error',
+                text1: 'Ops! Algo de errado não ta certo. 😬',
+                text2: `erro: ${e} `,
+                });
+                console.log('Algo de errado não deu certo!!! - ', e);
+            }
+            
         }
-
-    }
-
-    async function headleSetChar() {
+        
+        async function headleSetChar() {
         setloading(true);
         const newChar: Character = {
             id: formData.id!.toString(),
@@ -187,62 +204,87 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
             await addChar(newChar);
             setloading(false);
             setInternalVisible(false);
-            Alert.alert("Tudo Pronto!", `${formData.name} Add`);
-
+            Toast.show({
+                type: 'success',
+                text1: 'Tudo Certo 😁👍',
+                text2: `${formData.name} Adicionado!`,
+            });
+            
         } catch (e) {
             setloading(false);
             setInternalVisible(false);
-            console.log('Algo de errado não deu certo!!! - ', e);
-            Alert.alert('Algo de errado não deu certo!!! - ', `erro: ${e}`);
+            Toast.show({
+               type: 'error',
+               text1: 'Ops! Algo de errado não ta certo. 😬',
+               text2: `erro: ${e} `,
+               });
+               console.log('Algo de errado não deu certo!!! - ', e);
+            }
+            
         }
-
-    }
-
-    async function headleUpdateChar() {
-        setloading(true);
-        const newChar: Character = {
-            id: formData.id!.toString(),
-            name: formData.name!,
-            description: formData.description!,
-            images: imageLinks.join('\n'), 
-            animeId: formData.animeId!.toString()
-        };
-        try {
-            await updateChar(newChar);
-            setloading(false);
-            setInternalVisible(false);
-            Alert.alert("Tudo Pronto!", `${formData.name} Atualizado`);
-
-        } catch (e) {
-            setloading(false);
-            setInternalVisible(false);
-            console.log('Algo de errado não deu certo!!! - ', e);
-            Alert.alert('Algo de errado não deu certo!!! - ', `erro: ${e}`);
+        
+        async function headleUpdateChar() {
+            setloading(true);
+            const newChar: Character = {
+                id: formData.id!.toString(),
+                name: formData.name!,
+                description: formData.description!,
+                images: imageLinks.join('\n'), 
+                animeId: formData.animeId!.toString()
+            };
+            try {
+                await updateChar(newChar);
+                setloading(false);
+                setInternalVisible(false);
+                Toast.show({
+                    type: 'info',
+                    text1: 'Tudo Certo 😁👍',
+                    text2: `${formData.name} Salvo!`,
+                });
+                
+            } catch (e) {
+                setloading(false);
+                setInternalVisible(false);
+                Toast.show({
+                    type: 'error',
+                    text1: 'Ops! Algo de errado não ta certo. 😬',
+                    text2: `erro: ${e} `,
+                });
+                console.log('Algo de errado não deu certo!!! - ', e);
+            }
+            
+            
         }
-
-
-    }
-
-    async function headleUpdateAnime() {
-        setloading(true);
-        const newAnime: Anime = {
-            id: formData.id!.toString(),
-            name: formData.name!,
-            description: formData.description!,
-            images: imageLinks.join('\n'), // formData.images!.toString(),
-            status: filter
-        };
-        try {
-            await updateAnime(newAnime);
-            setloading(false);
-            setInternalVisible(false);
-            Alert.alert("Tudo Pronto!", `${formData.name} Atualizado`);
-
-        } catch (e) {
-            setloading(false);
-            setInternalVisible(false);
-            console.log('Algo de errado não deu certo!!! - ', e);
-            Alert.alert('Algo de errado não deu certo!!! - ', `erro: ${e}`);
+        
+        async function headleUpdateAnime() {
+            setloading(true);
+            const newAnime: Anime = {
+                id: formData.id!.toString(),
+                name: formData.name!,
+                description: formData.description!,
+                images: imageLinks.join('\n'), // formData.images!.toString(),
+                status: filter
+            };
+            try {
+                await updateAnime(newAnime);
+                setloading(false);
+                setInternalVisible(false);
+                Toast.show({
+                    type: 'info',
+                    text1: 'Tudo Certo 😁👍',
+                    text2: `${formData.name} Salvo!`,
+                });
+                
+            } catch (e) {
+                setloading(false);
+                setInternalVisible(false);
+                console.log('Algo de errado não deu certo!!! - ', e);
+                
+                Toast.show({
+                    type: 'error',
+                    text1: 'Ops! Algo de errado não ta certo. 😬',
+                    text2: `erro: ${e} `,
+                });
         }
 
     }
