@@ -22,7 +22,7 @@ export const LightTheme = {
     // Exemplo de customização de cores
      primary: '#ff9d00ff',
     accent: '#c49a56ff',
-    card:'#ffefe2d7',
+    card:'#fbfbfbd7',
     
   },
   fonts: configureFonts({config: fontConfig}),

@@ -50,9 +50,8 @@ export default function App() {
                                 options={{ 
                                     title: 'Detalhes Anime',
                                     headerShown:false,
-                                     animation:'ios_from_right',
+                                     animation:'fade',
                                       animationMatchesGesture:true,
-                                    animationDuration:900
                                 }} 
                             />
                             <Stack.Screen 
@@ -60,7 +59,7 @@ export default function App() {
                                 options={{ 
                                     title: 'Detalhes Personagem',
                                     headerShown:false,
-                                     animation:'slide_from_bottom',
+                                     animation:'fade',
                                      animationDuration:100,
                                     
                                 }} 

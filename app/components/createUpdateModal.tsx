@@ -304,11 +304,6 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                 }}
                 theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.8)' } }}
             >
-                {/* <KeyboardAvoidingView
-                    style={{ flex: 1, }}
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Ajuste o offset conforme necessário
-                > */}
 
                     <ScrollView style={{ flex: 1, }}>
                         <Text style={{
