@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { View, Text,Image, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { Icon, useTheme} from "react-native-paper";
 import { router } from "expo-router";
@@ -18,7 +17,6 @@ interface CharCardApiProps {
 export const CharCardApi: React.FC<CharCardApiProps> = (({ char, animeId }) => {
   const imageUrl = char.character.images?.jpg?.image_url ;
   const theme = useTheme() as AppTheme; 
-  const [visible, setVisible] = useState(false);
   const {characters} = useData()
   const isCharInList = characters.some(item => item.id.toString() === char.character.mal_id.toString());
 

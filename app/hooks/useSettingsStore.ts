@@ -1,9 +1,7 @@
-// src/features/Settings/store/useSettingsStore.ts
 
 import { create } from 'zustand';
 import { Settings, defaultSettings } from '@app/types/config';
 import { SettingsRepository } from '@app/_services/Database/SettingsRepository';
-
 
 
 // 1. Define o formato do estado e das ações do Zustand

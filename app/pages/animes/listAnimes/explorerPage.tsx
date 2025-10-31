@@ -13,7 +13,6 @@ import { AppTheme } from '@app/themes/themes';
 import { AnimeData } from '@app/_services/types';
 import { AnimeCardApi } from '@components/animeCardApi';
 
-// Importa o hook customizado
 import { useAnimeData } from '@app/hooks/useAnimeData'; 
 
     function removeDuplicates(animes: AnimeData[]): AnimeData[] {
@@ -27,12 +26,10 @@ import { useAnimeData } from '@app/hooks/useAnimeData';
 
 
 const InfiniteScrollList: React.FC = () => {
-    // 1. Estados de UI do componente
     const [searchQuery, setSearchQuery] = useState(''); 
     const [searchTerm, setSearchTerm] = useState(''); 
     const theme = useTheme() as AppTheme; 
 
-    // 2. Uso do Hook Customizado para obter dados e funções de lógica
     const { animes, isLoading, error, isInitialLoad, hasNextPage, handleLoadMore } = useAnimeData(searchTerm); 
 const animeData = removeDuplicates(animes)
     const styles = StyleSheet.create({
@@ -93,7 +90,7 @@ const animeData = removeDuplicates(animes)
         }
     });
 
-    // 4. Funções de Renderização
+    // Funções de Renderização
     const renderItem: ListRenderItem<AnimeData> = ({ item }) => <AnimeCardApi anime={item} />;
 
     const renderFooter = () => {
@@ -139,7 +136,6 @@ const animeData = removeDuplicates(animes)
                 placeholderTextColor="#999"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                // Aciona a pesquisa, definindo o searchTerm que o hook escuta
                 onSubmitEditing={() => setSearchTerm(searchQuery)} 
                 autoCorrect={false}
                 autoCapitalize="none"

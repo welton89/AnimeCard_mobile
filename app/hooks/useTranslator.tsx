@@ -1,9 +1,7 @@
 
-// const apiKey:string = 'AIzaSyAvBo_HH8WPbPyyZ1oabVH0BXfBTCMi-dY';
 import { useState, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useSettingsStore } from '@app/hooks/useSettingsStore';
-
 
 
 interface GeminiResponse {
@@ -16,13 +14,10 @@ interface GeminiResponse {
   }>;
 }
 
-
-
-
 export function useTranslator(targetLanguage: string = 'pt-br') {
   const [translatedText, setTranslatedText] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { settings,  isInitialized, initialize, updateSetting } = useSettingsStore();
+  const {settings } = useSettingsStore();
   const apiKey:string = settings.gemini;
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`; 
 
@@ -40,7 +35,7 @@ async function callGemini(prompt: string): Promise<string | null> {
       parts: [{ text: prompt }],
     }],
     generationConfig: { 
-      temperature: 0.2, // Baixa temperatura para traduções diretas
+      temperature: 0.2, 
       maxOutputTokens: 2048,
     }
   };

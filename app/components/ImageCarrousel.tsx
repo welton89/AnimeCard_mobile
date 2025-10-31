@@ -10,15 +10,10 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
+
 import { useTheme } from 'react-native-paper'; 
-
-// --- Tipagem do Tema ---
-// Importe a tipagem do seu tema para ter acesso às cores personalizadas
-import { useThemeToggle } from '@app/contexts/ThemeContext'; // Ajuste o caminho se necessário!
 import { AppTheme } from '@app/themes/themes';
-   const { isDark, toggleTheme } = useThemeToggle();
 
-// --- Constantes ---
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ITEM_WIDTH = SCREEN_WIDTH;
 
@@ -27,15 +22,13 @@ interface ImageCarouselProps {
   height?: number;
 }
 
-// --- Componentes Auxiliares ---
+//  Componentes Dots 
 
 const DotsIndicator: React.FC<{
   data: string[];
   currentIndex: number;
 }> = ({ data, currentIndex }) => {
-  // 💡 Usa o useTheme para obter as cores ativas do tema (claro ou escuro)
   const theme = useTheme() as AppTheme; 
-  // Define cores com base no tema
   const activeColor = theme.colors.primary; 
   const inactiveColor = '#626262ff';
   return (
@@ -46,7 +39,7 @@ const DotsIndicator: React.FC<{
           style={[
             styles.dot,
             { backgroundColor: index === currentIndex ? activeColor : inactiveColor },
-            index === currentIndex && styles.activeDot, // Mantém a customização de tamanho se existir
+            index === currentIndex && styles.activeDot,
           ]}
         />
       ))}
@@ -104,7 +97,6 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({
           index,
         })}
       />
-      {/* Condicional mais limpa para mostrar o indicador */}
       { data.length > 1 && <DotsIndicator data={data} currentIndex={currentIndex} /> }
      
     </View>
@@ -119,7 +111,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     justifyContent: 'center', 
     marginTop: 10, 
-    // Garante que o indicador fique acima da tela, se o carousel estiver na base
     position: 'absolute', 
     bottom: 10,
     width: '100%', 

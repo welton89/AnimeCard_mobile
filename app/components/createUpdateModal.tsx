@@ -1,16 +1,15 @@
 
-import { Anime, AnimeData, Character } from '@app/_services/types';
-import { CharacterData } from '@app/types/CharacterData';
-import Toast from 'react-native-toast-message';
-
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
-import { ActivityIndicator, Button, Card, Dialog, IconButton, Modal, Portal, useTheme,TextInput } from 'react-native-paper';
-import { AppTheme } from '@app/themes/themes';
+import { ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Button, IconButton, Modal, Portal, useTheme,TextInput } from 'react-native-paper';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useData } from '@app/_services/DataContext';
 import {ImageScroller} from '@components/ImageScroller'
 import {Filter} from '@app/components/Filter'
+import Toast from 'react-native-toast-message';
 
+import { AppTheme } from '@app/themes/themes';
+import { Anime, AnimeData, Character } from '@app/_services/types';
+import { CharacterData } from '@app/types/CharacterData';
 
 
 interface CreateUpdateModalProps {
@@ -25,13 +24,18 @@ interface CreateUpdateModalProps {
 }
 
 
-
-export default function CreateUpdateModal({ externalVisible, type, item, operation, animeId, traslate, onClose }: CreateUpdateModalProps) {
+export default function CreateUpdateModal({ externalVisible, 
+                                            type, 
+                                            item, 
+                                            operation, 
+                                            animeId, 
+                                            traslate, 
+                                            onClose 
+                                        }: CreateUpdateModalProps) {
     const { addChar, addAnime, updateChar, updateAnime } = useData();
-
     const theme = useTheme() as AppTheme;
-    const [internalVisible, setInternalVisible] = useState(false); // Inicia como false
-    const [loading, setloading] = useState(false); // Inicia como false
+    const [internalVisible, setInternalVisible] = useState(false); 
+    const [loading, setloading] = useState(false); 
     const [filter, setFilter] = useState('list');
 
 
@@ -120,7 +124,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                 text1: 'Ops! 😬',
                 text2: 'Esta imagem já foi adicionada.',
                 });
-            setNewImageUrl(''); // Limpa o campo mesmo assim
+            setNewImageUrl(''); 
             return;
         }
 
@@ -165,7 +169,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
             id: formData.id!.toString(),
             name: formData.name!,
             description: formData.description!,
-            images: imageLinks.join('\n'), //formData.images!.toString(),
+            images: imageLinks.join('\n'), 
             status: filter
         };
         try {
@@ -220,7 +224,6 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                });
                console.log('Algo de errado não deu certo!!! - ', e);
             }
-            
         }
         
         async function headleUpdateChar() {
@@ -252,8 +255,6 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                 });
                 console.log('Algo de errado não deu certo!!! - ', e);
             }
-            
-            
         }
         
         async function headleUpdateAnime() {
@@ -262,7 +263,7 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                 id: formData.id!.toString(),
                 name: formData.name!,
                 description: formData.description!,
-                images: imageLinks.join('\n'), // formData.images!.toString(),
+                images: imageLinks.join('\n'), 
                 status: filter
             };
             try {
@@ -286,11 +287,9 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                     text2: `erro: ${e} `,
                 });
         }
-
     }
 
     return (
-
         <Portal>
             <Modal
                 visible={internalVisible}
@@ -305,126 +304,122 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                 theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.8)' } }}
             >
 
-                    <ScrollView style={{ flex: 1, }}>
-                        <Text style={{
-                            color: theme.colors.secondary,
-                            fontSize: 24,
-                            alignSelf: 'center',
+                <ScrollView style={{ flex: 1, }}>
+                    <Text style={{
+                        color: theme.colors.secondary,
+                        fontSize: 24,
+                        alignSelf: 'center',
                         }}>
                         { operation == 'create' ?  ' Adicionar ao Catálogo' : 'Editar'}
 
-                        </Text>
+                    </Text>
 
 
-                        <TextInput
-                            label="Nome"
-                            defaultValue={formData.name!}
-                            mode="outlined"
-                            outlineStyle={{
-                                borderRadius: 12,
-                                backgroundColor: theme.colors.surfaceVariant,
-                            }}
-                            onChangeText={(text) => handleChange('name', text)}
-                            style={{
-                                marginBottom: 15,
-                                flex: 1,
-                                color: theme.colors.secondary,
-                                borderRadius: 12,
-                                backgroundColor: theme.colors.surfaceVariant,
-                            }} />
+                    <TextInput
+                        label="Nome"
+                        defaultValue={formData.name!}
+                        mode="outlined"
+                        outlineStyle={{
+                        borderRadius: 12,
+                        backgroundColor: theme.colors.surfaceVariant,
+                        }}
+                        onChangeText={(text) => handleChange('name', text)}
+                        style={{
+                            marginBottom: 15,
+                            flex: 1,
+                            color: theme.colors.secondary,
+                            borderRadius: 12,
+                            backgroundColor: theme.colors.surfaceVariant,
+                        }} 
+                    />
 
+                    <TextInput
+                        label="Sobre"
+                        key='sobre'
+                        defaultValue={formData.description!}
+                        onChangeText={(text) => handleChange('description', text)}
+                        multiline
+                        mode="outlined"
+                        outlineStyle={{
+                            borderRadius: 12,
+                            backgroundColor: theme.colors.surfaceVariant,
+                        }}
+                        numberOfLines={28}
+                        style={{
+                            marginBottom: 15,
+                            borderRadius: 12,
+                            height: 250,
+                            width: '100%',
+                            marginEnd: 20,
+                            textAlignVertical: 'top',
+                            color: theme.colors.secondary,
+                            backgroundColor: theme.colors.surfaceVariant,
+                        }}
+                    />
 
-                        <TextInput
-                            label="Sobre"
-                            key='sobre'
-                            defaultValue={formData.description!}
-                            onChangeText={(text) => handleChange('description', text)}
-                            multiline
-                            mode="outlined"
-                            outlineStyle={{
-                                borderRadius: 12,
-                                // height: 250,
-                                backgroundColor: theme.colors.surfaceVariant,
-                            }}
-                            numberOfLines={28}
-                            style={{
-                                marginBottom: 15,
-                                borderRadius: 12,
-                                height: 250,
-                                width: '100%',
-                                marginEnd: 20,
-                                textAlignVertical: 'top',
-                                color: theme.colors.secondary,
-                                backgroundColor: theme.colors.surfaceVariant,
-                            }} />
-
-
-                            {
-                                type == 'anime' || type == 'animeApi' ?
-                                <View style={{marginBottom:10}}>
+                    {type == 'anime' || type == 'animeApi' ?
+                        <View style={{marginBottom:10}}>
                                      
                             <Filter filter={filter}
-                            edit={true}
-                            setFilter={setFilter}/>
-                            </View>
-                            : null
-                        }
+                                edit={true}
+                                setFilter={setFilter}/>
+                        </View> : null
+                    }
         
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, position: 'relative' }}>
+                        <TextInput
+                            label="URL Imagem"
+                            value={newImageUrl} 
+                            mode="outlined"
+                            onChangeText={setNewImageUrl} 
+                            placeholder="Cole o link da imagem aqui"
+                            outlineStyle={{
+                                borderRadius: 12,
+                                backgroundColor: theme.colors.surfaceVariant,
+                                height: 50,
+                            }}
+                            style={{
+                                flex: 1, 
+                                height: 40,
+                                width: '100%',
+                            }}
+                        />
 
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, position: 'relative' }}>
-                            <TextInput
-                                label="URL Imagem"
-                                value={newImageUrl} 
-                                mode="outlined"
-                                onChangeText={setNewImageUrl} 
-                                placeholder="Cole o link da imagem aqui"
-                                outlineStyle={{
-                                    borderRadius: 12,
-                                    backgroundColor: theme.colors.surfaceVariant,
-                                    height: 50,
-                                }}
-                                style={{
-                                    flex: 1, 
-                                    height: 40,
-                                    width: '100%',
-                                }} />
-                            <IconButton
-                                icon="plus-circle"
-                                iconColor={theme.colors.primary}
-                                size={30}
-                                style={{
-                                    position: 'absolute',
-                                    right: 0,
-                                    top: 2,
-                                    backgroundColor: theme.colors.surfaceVariant,
-                                    borderTopRightRadius: 12,
-                                    borderBottomRightRadius: 12,
-                                    borderTopLeftRadius: 0,
-                                }}
-                                onPress={handleManualAddImage}
-                                disabled={newImageUrl.trim() === ''} />
-                        </View>
-                        <ImageScroller
-                            imageUrls={imageLinks}
-                            onRemoveImage={handleRemoveImage} />
+                        <IconButton
+                            icon="plus-circle"
+                            iconColor={theme.colors.primary}
+                            size={30}
+                            style={{
+                                position: 'absolute',
+                                right: 0,
+                                top: 2,
+                                backgroundColor: theme.colors.surfaceVariant,
+                                borderTopRightRadius: 12,
+                                borderBottomRightRadius: 12,
+                                borderTopLeftRadius: 0,
+                            }}
+                            onPress={handleManualAddImage}
+                            disabled={newImageUrl.trim() === ''}
+                        />
+                    </View>
+                    <ImageScroller
+                        imageUrls={imageLinks}
+                        onRemoveImage={handleRemoveImage}
+                    />
 
-
-                    </ScrollView>
-                {/* </KeyboardAvoidingView> */}
-                {loading ?
+                </ScrollView>
+                {loading &&
                     <ActivityIndicator animating={true} color={theme.colors.primary} style={{ margin: 20 }} />
-                    : null}
+                }
                 {operation == 'create' ?
-
                     <Button
-                     disabled={loading}
+                        disabled={loading}
                         onPress={() => type == 'charApi' ?
                             headleSetChar() :
                             headleSetAnime()}
                         mode="contained" style={{ marginTop: 10 }}>
                         {!loading ? 'Adicionar' : 'Adicionando...'}
                     </Button>
-
                     :
                     <Button
                         disabled={loading}
@@ -433,7 +428,6 @@ export default function CreateUpdateModal({ externalVisible, type, item, operati
                             headleUpdateAnime()}
                         mode="contained" style={{ marginTop: 10 }}>
                         {!loading ? 'Salvar' : 'Salvando...'}
-
                     </Button>}
             </Modal>
 

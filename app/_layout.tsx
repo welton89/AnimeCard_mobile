@@ -1,23 +1,17 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { StyleSheet, View, Text, Dimensions, StatusBar } from 'react-native';
+import React, { useEffect } from 'react';
+import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { BottomNavigation, Provider as PaperProvider } from 'react-native-paper';
-import { Stack, useRouter } from 'expo-router';
-import Toast, { BaseToast, BaseToastProps, ErrorToast } from 'react-native-toast-message';
+import { Provider as PaperProvider } from 'react-native-paper';
+import { Stack } from 'expo-router';
+import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message';
 import { useSettingsStore } from '@app/hooks/useSettingsStore';
 
 import { DataProvider } from '@app/_services/DataContext';
-import { ThemeContextProvider, useThemeToggle } from '@app/contexts/ThemeContext'; // Seu contexto de tema
-import * as SplashScreen from 'expo-splash-screen';
+import { ThemeContextProvider } from '@app/contexts/ThemeContext';
 
-// Set the animation options. This is optional.
-// SplashScreen.setOptions({
-//   duration: 1000,
-//   fade: true,
-// });
 export default function App() {
-      const { settings, isLoading, isInitialized, initialize, updateSetting } = useSettingsStore();
+      const { isInitialized, initialize } = useSettingsStore();
       useEffect(() => {
         if (!isInitialized) {
           initialize();
@@ -31,50 +25,50 @@ export default function App() {
             <ThemeContextProvider> 
                  <DataProvider>
                     <Stack >
-                            <Stack.Screen 
-                            name="index" 
-                            options={{
-                                 headerShown: false,
-                                  animation:'slide_from_right', }} /> 
+                        <Stack.Screen 
+                          name="index" 
+                          options={{
+                            headerShown: false,
+                            animation:'slide_from_right', 
+                          }}
+                        /> 
                             
-                            <Stack.Screen 
-                                name="pages/characters/listChars/[id]" 
-                                options={{ 
-                                    title: 'Lista Personagens',
-                                    headerShown:false,
-                                    animation:'slide_from_bottom'
-                                }} 
-                            />
-                            <Stack.Screen 
-                                name="pages/animes/animeDetail/[id]" 
-                                options={{ 
-                                    title: 'Detalhes Anime',
-                                    headerShown:false,
-                                     animation:'fade',
-                                      animationMatchesGesture:true,
-                                }} 
-                            />
-                            <Stack.Screen 
-                                name="pages/characters/charDetail/[id]" 
-                                options={{ 
-                                    title: 'Detalhes Personagem',
-                                    headerShown:false,
-                                     animation:'fade',
-                                     animationDuration:100,
-                                    
-                                }} 
-                            />
+                        <Stack.Screen 
+                            name="pages/characters/listChars/[id]" 
+                              options={{ 
+                                title: 'Lista Personagens',
+                                headerShown:false,
+                                animation:'slide_from_bottom'
+                              }} 
+                        />
 
-                            {/* 3. Captura rotas não encontradas, se necessário */}
-                            {/* <Stack.Screen name="+not-found" /> */}
+                        <Stack.Screen 
+                            name="pages/animes/animeDetail/[id]" 
+                              options={{ 
+                                title: 'Detalhes Anime',
+                                headerShown:false,
+                                animation:'fade',
+                                animationMatchesGesture:true,
+                              }} 
+                        />
 
-                        </Stack>
+                        <Stack.Screen 
+                            name="pages/characters/charDetail/[id]" 
+                              options={{ 
+                                title: 'Detalhes Personagem',
+                                headerShown:false,
+                                animation:'fade',
+                                animationDuration:100,
+                              }} 
+                        />
+
+                    </Stack>
                     <StatusBar hidden={false} />
                  </DataProvider>
             </ThemeContextProvider>
         </PaperProvider>
     </SafeAreaProvider>
-      <Toast config={toastConfig} />
+    <Toast config={toastConfig} />
       </>
     );
 }

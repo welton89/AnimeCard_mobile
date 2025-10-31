@@ -2,10 +2,10 @@ import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import { ActivityIndicator, Button, Dialog, Portal, useTheme } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
 import { useData } from '@app/_services/DataContext';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Character } from '@app/_services/types'; 
 import { ImageCarousel } from '@components/ImageCarrousel';
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useCharacterData } from '@app/hooks/useCharacterData';
 import CreateUpdateModal from '@app/components/createUpdateModal'
 import { useTranslator } from '@app/hooks/useTranslator';
@@ -14,26 +14,24 @@ import Toast from 'react-native-toast-message';
 
 
 type CharDetailParams = {
-  id: string;      // Captura o primeiro parâmetro de rota
-  animeId: string; // Captura o segundo parâmetro de rota
+  id: string;     
+  animeId: string; 
 };
 export default function CharDetail() {
   const { id, animeId } = useLocalSearchParams<CharDetailParams>();
- 
   
   const theme = useTheme() as AppTheme; 
   const { characters, delChar } = useData();
   const [visible, setVisible] = useState(false);
   const [visibleDel, setVisibleDel] = useState(false);
   const [apagando, setApagando] = useState(false);
-
   
-  const { characterData, loading, error} = useCharacterData(id);
+  const { characterData} = useCharacterData(id);
   const char:Character  = characters.find(a => a.id.toString() == id)!;
   const charImg = char?.images.split("\n").filter((uri) => uri.trim() !== "")
   const imageUris = [characterData?.images.jpg.large_image_url ||characterData?.images.jpg.image_url ]
   const { translatedText, isLoading, translate, setTranslatedText } = useTranslator();
-  const { settings, isInitialized, initialize, updateSetting } = useSettingsStore();
+  const { settings } = useSettingsStore();
 
     
     const hideDialog = () => setVisible(false);
@@ -74,8 +72,6 @@ const headleDel = async () => {
 
 };
 
-
-
   if (!characterData) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -107,19 +103,19 @@ const headleDel = async () => {
         </Text>
 
         {
-            characterData.name_kanji ?
+            characterData.name_kanji &&
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
             Nome Kanji: {characterData.name_kanji}
         </Text>
-        : null
+      
 
         }
         {
-            characterData.nicknames.length != 0  ?
+            characterData.nicknames.length != 0  &&
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
             Apelidos: {characterData.nicknames.join(", ")}
         </Text>
-        : ''
+      
 
         }
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
@@ -137,14 +133,14 @@ const headleDel = async () => {
              {   isLoading ?
                 <ActivityIndicator animating={true} color={theme.colors.primary} style={{ margin: 2 }} />
                       :
-               ( char == undefined ?
+               ( !char &&
                  <Button  onPress={translatedText ? headleOriginal : headleTrans}
                       mode= 'text'
                       disabled={settings.gemini != '' ? false : true}
                       style={{   marginRight: -8,  }}>
                       { translatedText ? 'Original' : 'Traduzir'}
         
-                </Button> : null)
+                </Button>)
                 }
                 </View>
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
