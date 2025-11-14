@@ -1,110 +1,93 @@
 import React from 'react';
-import {
-  Modal,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  Dimensions,
-} from 'react-native';
+import { Modal,View, StyleSheet,TouchableOpacity,Text,Dimensions,} from 'react-native';
 import WebView from 'react-native-webview';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useYouTubeIframeGenerator } from '@app/hooks/useYouTubeIframeGenerator';
+
+const { width } = Dimensions.get('window');
+const playerHeight = width * (9 / 16); 
+
+
 interface WebViewYoutubeModalProps {
   videoUrl: string;
   isVisible: boolean;
   onClose: () => void;
 }
 
-const { width } = Dimensions.get('window');
-// Altura em proporção 16:9, padrão para vídeos
-const playerHeight = width * (9 / 16); 
 
 
+const WebViewYoutubeModal: React.FC<WebViewYoutubeModalProps> = ({videoUrl, isVisible, onClose,}) => {
+    const iframeHtml = useYouTubeIframeGenerator(videoUrl, { useNoCookie: true  });
+
+    const generateIframeHtml = () => {
+      return `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { margin: 0; padding: 0; background-color: black; }
+              .video-container { 
+                position: relative; 
+                width: 100%; 
+                height: ${playerHeight}px; 
+              }
+              iframe { 
+                position: absolute; 
+                top: 0; 
+                left: 0; 
+                width: 100%; 
+                height: 100%; 
+              }
+            </style>
+          </head>
+          <body>
+            <div class="video-container">
+              ${iframeHtml}
+            </div>
+          </body>
+        </html>
+      `;
+    };
 
 
-const WebViewYoutubeModal: React.FC<WebViewYoutubeModalProps> = ({
-  videoUrl,
-  isVisible,
-  onClose,
-}) => {
+    const htmlContent = generateIframeHtml( );
 
-  console.log(videoUrl)
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isVisible}
+        onRequestClose={onClose}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
 
-  const generateIframeHtml = ( screenWidth: number) => {
+            <TouchableOpacity 
+              style={styles.closeButton} 
+              onPress={onClose}
+            >
+              <Text style={styles.closeButtonText}>X</Text>
+            </TouchableOpacity>
 
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            body { margin: 0; padding: 0; background-color: black; }
-            .video-container { 
-              position: relative; 
-              width: 100%; 
-              height: ${playerHeight}px; 
-            }
-            iframe { 
-              position: absolute; 
-              top: 0; 
-              left: 0; 
-              width: 100%; 
-              height: 100%; 
-            }
-          </style>
-        </head>
-        <body>
-          <div class="video-container">
-            <iframe 
-              src="${videoUrl}" 
-              frameborder="0" 
-              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
-              allowfullscreen
-            ></iframe>
-          </div>
-        </body>
-      </html>
-    `;
-  };
-
-
-  const htmlContent = generateIframeHtml( width);
-
-  return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isVisible}
-      onRequestClose={onClose}
-    >
-      <SafeAreaView style={styles.centeredView}>
-        <View style={styles.modalView}>
-
-          <TouchableOpacity 
-            style={styles.closeButton} 
-            onPress={onClose}
-          >
-            <Text style={styles.closeButtonText}>X</Text>
-          </TouchableOpacity>
-
-          {/* WebView para carregar o iFrame do YouTube */}
-          <View style={styles.playerContainer}>
-            <WebView
-              originWhitelist={['*']} // Permite que a WebView carregue qualquer conteúdo
-              source={{ html: htmlContent }}
-              style={styles.webView}
-              javaScriptEnabled={true}
-              domStorageEnabled={true}
-              allowsInlineMediaPlayback={true} // Importante para iOS
-              allowsFullscreenVideo={true}     // Importante para Android/iOS para fullscreen
-              mediaPlaybackRequiresUserAction={false} // Descomente para tentar autoplay
-            />
+            {/* WebView para carregar o iFrame do YouTube */}
+            <View style={styles.playerContainer}>
+              <WebView
+                originWhitelist={['*']} // Permite que a WebView carregue qualquer conteúdo
+                source={{ html: htmlContent, baseUrl: 'https://meuapp.local' }}
+                style={styles.webView}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                allowsInlineMediaPlayback={true} // Importante para iOS
+                allowsFullscreenVideo={true}     // Importante para Android/iOS para fullscreen
+                mediaPlaybackRequiresUserAction={false} // Descomente para tentar autoplay
+              />
+            </View>
           </View>
         </View>
-      </SafeAreaView>
-    </Modal>
-  );
-};
+      </Modal>
+    );
+  };
 
 const styles = StyleSheet.create({
   centeredView: {

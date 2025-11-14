@@ -5,8 +5,7 @@ import type { Anime, Character } from "@app/_services/types";
 import * as api from "@app/_services/api"; // Certifique-se de que a importação da API está aqui
 import { AnimeRepository, CharRepository } from '@app/_services/Database/SettingsRepository';
 import { useSettingsStore } from '@app/hooks/useSettingsStore';
-import { ActivityIndicator, MD2Colors, Text } from 'react-native-paper';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 // 1. Defina o formato dos dados (incluindo o status de carregamento e a nova função)
 interface DataContextType {
@@ -56,13 +55,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setCharacters(charactersData); 
       }else{
         console.log('dados locais')
-        // Se estiver no modo local, chama o repositório DB (que depende da inicialização ter sido feita no useSettingsStore)
-        // const [animesData, charactersData] = await Promise.all([
-        //    AnimeRepository.getAll(),
-        //    CharRepository.getAll(),
-        //   ]);
-        //   setAnimes(animesData);
-        //   setCharacters(charactersData); 
+
       }
     } catch (error) {
       console.error("Failed to fetch data", error);
@@ -73,8 +66,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   
 
   useEffect(() => {
-    // Garante que o store de settings inicializou E que não estamos carregando as configurações
-    // Isto garante que o DB já foi configurado (pelo useSettingsStore) antes de tentar ler os dados iniciais.
     if (isInitialized && !isSettingsLoading) {
         fetchData();
     }
@@ -263,17 +254,3 @@ export function useData() {
   }
   return context;
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF', // Cor de fundo do carregamento
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#333333',
-  }
-});

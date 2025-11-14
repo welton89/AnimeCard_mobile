@@ -77,7 +77,7 @@ export const initializeDBAndTables = async (): Promise<void> => {
 };
 
 
-const getSettingsFromDB = async (database: SQLite.SQLiteDatabase): Promise<Settings> => {
+const getSettingsFromDB = async (database: SQLite.SQLiteDatabase): Promise<Partial<Settings>> => {
   const query = 'SELECT * FROM settings';
   try {
     const result = await database.getAllAsync<SettingDBItem>(query); 
@@ -85,11 +85,12 @@ const getSettingsFromDB = async (database: SQLite.SQLiteDatabase): Promise<Setti
     
     result.forEach(item => {
       // É crucial garantir que o valor seja mapeado corretamente para o tipo
+      // Aqui, retornamos apenas o que está no DB.
       (currentSettings as any)[item.key] = item.value; 
     });
 
-    const mergedSettings: Settings = { ...defaultSettings, ...currentSettings as Settings };
-    return mergedSettings;
+    // RETORNA APENAS O QUE VEIO DO DB
+    return currentSettings;
 
   } catch (error) {
     console.error("Failed to get settings from DB:", error);
@@ -119,23 +120,31 @@ export const saveAllSettings = async (database: SQLite.SQLiteDatabase, settings:
 };
 
 
-/**
- * Inicializa o banco de dados e as configurações (cria tabelas e insere valores iniciais).
- */
+
 export const initializeSettings = async (): Promise<Settings> => {
   const database = await getDBConnection();
   await createSettingsTable(database); // Garante que as tabelas existam
 
-  const settings = await getSettingsFromDB(database);
-  
-  // Condição para popular com dados padrão se estiver vazio
-  if (!settings.name || settings.name === defaultSettings.name) {
+  // 1. Obtém APENAS o que está no DB.
+  const dbSettings = await getSettingsFromDB(database);
+
+  const isFirstRun = Object.keys(dbSettings).length === 0;
+
+  if (isFirstRun) {
+      console.log('Primeira inicialização de configurações. Salvando padrões.');
       // Salva para garantir que todos os campos padrão estão lá
       await saveAllSettings(database, defaultSettings);
       return defaultSettings;
   }
   
-  return settings;
+  // 3. Se não for a primeira execução, mescla os padrões com o que veio do DB
+  // para garantir que novos campos em defaultSettings sejam adicionados
+  const mergedSettings: Settings = { 
+      ...defaultSettings, 
+      ...dbSettings as Settings 
+  };
+  
+  return mergedSettings;
 };
 
 
