@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import Toast from "react-native-toast-message";
 
 import { AppTheme } from '@app/themes/themes';
-import { useData } from '@app/_services/DataContext';
+import { useGunData } from '@app/_services/GunDataContext';
 import { JikanCharacter } from '@app/_services/jikanApi';
 
 const { width } = Dimensions.get('window');
@@ -17,7 +17,7 @@ interface CharCardApiProps {
 export const CharCardApi: React.FC<CharCardApiProps> = (({ char, animeId }) => {
   const imageUrl = char.character.images?.jpg?.image_url ;
   const theme = useTheme() as AppTheme; 
-  const {characters} = useData()
+  const {characters} = useGunData()
   const isCharInList = characters.some(item => item.id.toString() === char.character.mal_id.toString());
 
 

@@ -7,18 +7,33 @@ export interface Character {
   id: string;
   name: string;
   description: string;
-  images: string
+  images: string;
   animeId: string;
+  // Novos campos sugeridos
+  favorite?: boolean;
+  rating?: number; // 1-10
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Anime {
-  id:string;
+  id: string;
   name: string;
   images: string;
   description?: string;
-  status?: string
-
-
+  status?: 'list' | 'watching' | 'completed' | 'dropped' | 'plan_to_watch';
+  // Novos campos sugeridos
+  currentEpisode?: number;
+  totalEpisodes?: number;
+  currentSeason?: number;
+  totalSeasons?: number;
+  rating?: number; // 1-10
+  startDate?: string;
+  endDate?: string;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 

@@ -6,7 +6,7 @@ import { router } from "expo-router";
 
 import { AnimeData } from "@app/_services/types";
 import { AppTheme } from '@app/themes/themes';
-import { useData } from '@app/_services/DataContext';
+import { useGunData } from '@app/_services/GunDataContext';
 
 const { width } = Dimensions.get('window');
 
@@ -20,7 +20,7 @@ export const AnimeCardApi: React.FC<AnimeCardProps> = memo(({ anime }) => {
     const startYear = anime.aired?.from ? new Date(anime.aired.from).getFullYear() : 'N/A';
     const genreList = anime.genres.map(g => g.name).join(', ');
     const theme = useTheme() as AppTheme; 
-    const {animes} = useData()
+    const {animes} = useGunData()
     const isAnimeInList = animes.some(item => item.id.toString() === anime.mal_id.toString());
 
 

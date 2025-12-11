@@ -2,7 +2,7 @@
 import { ScrollView, Text, View } from 'react-native';
 import { ActivityIndicator, Button, IconButton, Modal, Portal, useTheme,TextInput } from 'react-native-paper';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useData } from '@app/_services/DataContext';
+import { useGunData } from '@app/_services/GunDataContext';
 import {ImageScroller} from '@components/ImageScroller'
 import {Filter} from '@app/components/Filter'
 import Toast from 'react-native-toast-message';
@@ -32,7 +32,7 @@ export default function CreateUpdateModal({ externalVisible,
                                             traslate, 
                                             onClose 
                                         }: CreateUpdateModalProps) {
-    const { addChar, addAnime, updateChar, updateAnime } = useData();
+    const { addChar, addAnime, updateChar, updateAnime } = useGunData();
     const theme = useTheme() as AppTheme;
     const [internalVisible, setInternalVisible] = useState(false); 
     const [loading, setloading] = useState(false); 
@@ -87,12 +87,12 @@ export default function CreateUpdateModal({ externalVisible,
     }, [item, type]);
 
     const [formData, setFormData] = useState({
-        id: initialData.id,
-        name: initialData.name,
-        images: initialData.images,
-        description: traslate || initialData.description,
-        animeId: initialData.animeId,
-        status: initialData.status
+        id: initialData.id || '',
+        name: initialData.name || '',
+        images: initialData.images || '',
+        description: traslate || initialData.description || '',
+        animeId: initialData.animeId || '',
+        status: initialData.status || 'list'
     });
 
     const listImages = typeof formData.images === 'string' ? formData.images.split("\n").filter((uri: string) => uri.trim() !== "") : [];
@@ -140,7 +140,7 @@ export default function CreateUpdateModal({ externalVisible,
     };
 
 
-    const handleChange = (field: keyof Character, value: string) => {
+    const handleChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
@@ -150,8 +150,9 @@ export default function CreateUpdateModal({ externalVisible,
 
 
     useEffect(() => {
-        if (traslate)
-       handleChange('description', traslate!)
+        if (traslate) {
+            setFormData(prev => ({ ...prev, description: traslate }));
+        }
     }, [traslate]);
 
     
@@ -166,11 +167,13 @@ export default function CreateUpdateModal({ externalVisible,
     async function headleSetAnime() {
         setloading(true);
         const newAnime: Anime = {
-            id: formData.id!.toString(),
-            name: formData.name!,
-            description: formData.description!,
+            id: (formData.id || Date.now().toString()).toString(),
+            name: formData.name || 'Sem nome',
+            description: formData.description || '',
             images: imageLinks.join('\n'), 
-            status: filter
+            status: filter as Anime['status'],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         };
         try {
             await addAnime(newAnime);
@@ -198,11 +201,13 @@ export default function CreateUpdateModal({ externalVisible,
         async function headleSetChar() {
         setloading(true);
         const newChar: Character = {
-            id: formData.id!.toString(),
-            name: formData.name!,
-            description: formData.description!,
+            id: (formData.id || Date.now().toString()).toString(),
+            name: formData.name || 'Sem nome',
+            description: formData.description || '',
             images: imageLinks.join('\n'), 
-            animeId: formData.animeId!.toString()
+            animeId: (formData.animeId || '').toString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         };
         try {
             await addChar(newChar);
@@ -229,11 +234,12 @@ export default function CreateUpdateModal({ externalVisible,
         async function headleUpdateChar() {
             setloading(true);
             const newChar: Character = {
-                id: formData.id!.toString(),
-                name: formData.name!,
-                description: formData.description!,
+                id: (formData.id || '').toString(),
+                name: formData.name || 'Sem nome',
+                description: formData.description || '',
                 images: imageLinks.join('\n'), 
-                animeId: formData.animeId!.toString()
+                animeId: (formData.animeId || '').toString(),
+                updatedAt: new Date().toISOString()
             };
             try {
                 await updateChar(newChar);
@@ -260,11 +266,12 @@ export default function CreateUpdateModal({ externalVisible,
         async function headleUpdateAnime() {
             setloading(true);
             const newAnime: Anime = {
-                id: formData.id!.toString(),
-                name: formData.name!,
-                description: formData.description!,
+                id: (formData.id || '').toString(),
+                name: formData.name || 'Sem nome',
+                description: formData.description || '',
                 images: imageLinks.join('\n'), 
-                status: filter
+                status: filter as Anime['status'],
+                updatedAt: new Date().toISOString()
             };
             try {
                 await updateAnime(newAnime);
@@ -317,7 +324,7 @@ export default function CreateUpdateModal({ externalVisible,
 
                     <TextInput
                         label="Nome"
-                        defaultValue={formData.name!}
+                        value={formData.name || ''}
                         mode="outlined"
                         outlineStyle={{
                         borderRadius: 12,
@@ -336,7 +343,7 @@ export default function CreateUpdateModal({ externalVisible,
                     <TextInput
                         label="Sobre"
                         key='sobre'
-                        defaultValue={formData.description!}
+                        value={formData.description || ''}
                         onChangeText={(text) => handleChange('description', text)}
                         multiline
                         mode="outlined"

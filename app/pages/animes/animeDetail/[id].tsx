@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import { ActivityIndicator, Button, Dialog, Portal, useTheme } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
-import { useData } from '@app/_services/DataContext';
+import { useGunData } from '@app/_services/GunDataContext';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Anime, AnimeData,JikanImages, Aired, Trailer } from '@app/_services/types'; 
 import { ImageCarousel } from '@components/ImageCarrousel';
@@ -9,7 +9,8 @@ import { useState, useEffect } from 'react';
 import WebViewYoutubeModal from '@components/videoModal';
 import  CreateUpdateModal  from '@components/createUpdateModal';
 import { useTranslator } from '@app/hooks/useTranslator';
-import { useSettingsStore } from '@app/hooks/useSettingsStore';
+import { useGunStore } from '@app/hooks/useGunStore';
+import { AnimeProgressTracker } from '@app/components/AnimeProgressTracker';
 import Toast from 'react-native-toast-message';
 
 
@@ -18,7 +19,7 @@ import Toast from 'react-native-toast-message';
 export default function AnimeDetail() {
   
   const theme = useTheme() as AppTheme; 
-  const { animes,delAnime } = useData();
+  const { animes, delAnime, updateAnime, updateAnimeProgress } = useGunData();
   const [ animeJ, setAnimeJ ] = useState<AnimeData>();
   const [ animeIMG, setAnimeIMG ] = useState<string>();
   const [visible, setVisible] = useState(false);
@@ -31,7 +32,7 @@ export default function AnimeDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const anime = animes.find(a => a.id.toString() == id);
   const imageUris =  anime?.images.split("\n").filter((uri) => uri.trim() !== "")
-    const { settings, isInitialized, initialize, updateSetting } = useSettingsStore();
+    const { settings, isInitialized, initialize, updateSetting } = useGunStore();
 
   // const [about, setAbout] = useState(anime?.description || animeJ?.synopsis || '');
   const hideDialog = () => setVisible(false);
@@ -263,6 +264,19 @@ const headleDel = async () => {
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
           {translatedText || anime?.description || animeJ?.synopsis || 'Nenhuma sinopse detalhada fornecida.'}
         </Text>
+
+        {/* Controle de Progresso - só aparece se o anime estiver no catálogo */}
+        {anime && (
+          <View style={{ marginVertical: 20 }}>
+            <AnimeProgressTracker
+              anime={anime}
+              onUpdateProgress={(episode, season) => updateAnimeProgress(anime.id, episode, season)}
+              onUpdateStatus={(status) => updateAnime({ ...anime, status })}
+              onUpdateRating={(rating) => updateAnime({ ...anime, rating })}
+              onUpdateNotes={(notes) => updateAnime({ ...anime, notes })}
+            />
+          </View>
+        )}
 
             { 
               !anime ? 

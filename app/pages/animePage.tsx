@@ -2,7 +2,7 @@ import { FlatList, ListRenderItem, View } from 'react-native';
 import { ActivityIndicator, Searchbar,  useTheme, Text } from 'react-native-paper';
 import { useState } from 'react';
 
-import { useData } from '@app/_services/DataContext';
+import { useGunData } from '@app/_services/GunDataContext';
 import { ItemCard } from '@components/itemCard';
 import { AppTheme } from '@app/themes/themes';
 import { Anime } from '@app/_services/types';
@@ -10,12 +10,12 @@ import {Filter} from '@app/components/Filter'
 
 
 export default  function AnimePage() {
-    const { animes, loading } = useData();
+    const { animes, loading } = useGunData();
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('all');
     const theme = useTheme() as AppTheme;
 
-    const filteredAnimes = animes.filter((val) => {
+    const filteredAnimes = (animes || []).filter((val) => {
       const matchesSearch = searchQuery === '' || val.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesFilter = filter === 'all' || val.status?.includes(filter);
       return matchesSearch && matchesFilter;
@@ -59,7 +59,7 @@ export default  function AnimePage() {
                   
                   <ActivityIndicator animating={true} size={'large'} color={theme.colors.primary} style={{width:350}} /> 
                     :
-                    !loading && animes.length == 0 ? <Text> Nada Aqui meu chapa!</Text>
+                    !loading && (animes?.length || 0) == 0 ? <Text> Nenhum Anime Salvo!</Text>
                     : null
                 }/>
               </View>

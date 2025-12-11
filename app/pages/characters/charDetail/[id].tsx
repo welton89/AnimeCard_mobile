@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import { ActivityIndicator, Button, Dialog, Portal, useTheme } from 'react-native-paper';
 import { AppTheme } from '@app/themes/themes';
-import { useData } from '@app/_services/DataContext';
+import { useGunData } from '@app/_services/GunDataContext';
 import { useLocalSearchParams } from 'expo-router';
 import { Character } from '@app/_services/types'; 
 import { ImageCarousel } from '@components/ImageCarrousel';
@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { useCharacterData } from '@app/hooks/useCharacterData';
 import CreateUpdateModal from '@app/components/createUpdateModal'
 import { useTranslator } from '@app/hooks/useTranslator';
-import { useSettingsStore } from '@app/hooks/useSettingsStore';
+import { useGunStore } from '@app/hooks/useGunStore';
 import Toast from 'react-native-toast-message';
 
 
@@ -21,7 +21,7 @@ export default function CharDetail() {
   const { id, animeId } = useLocalSearchParams<CharDetailParams>();
   
   const theme = useTheme() as AppTheme; 
-  const { characters, delChar } = useData();
+  const { characters, delChar, updateChar, toggleCharacterFavorite } = useGunData();
   const [visible, setVisible] = useState(false);
   const [visibleDel, setVisibleDel] = useState(false);
   const [apagando, setApagando] = useState(false);
@@ -31,7 +31,7 @@ export default function CharDetail() {
   const charImg = char?.images.split("\n").filter((uri) => uri.trim() !== "")
   const imageUris = [characterData?.images.jpg.large_image_url ||characterData?.images.jpg.image_url ]
   const { translatedText, isLoading, translate, setTranslatedText } = useTranslator();
-  const { settings } = useSettingsStore();
+  const { settings } = useGunStore();
 
     
     const hideDialog = () => setVisible(false);
@@ -119,8 +119,45 @@ const headleDel = async () => {
 
         }
         <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant }]}>
-            Favoritos: {characterData.favorites}
+            Favoritos na API: {characterData.favorites}
         </Text>
+
+        {/* Controles do Personagem - só aparece se estiver no catálogo */}
+        {char && (
+          <View style={{ marginVertical: 20, alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+              <Button
+                mode={char.favorite ? 'contained' : 'outlined'}
+                icon={char.favorite ? 'heart' : 'heart-outline'}
+                onPress={() => toggleCharacterFavorite(char.id)}
+                style={{ marginRight: 16 }}
+              >
+                {char.favorite ? 'Favorito' : 'Adicionar aos Favoritos'}
+              </Button>
+            </View>
+
+            {/* Sistema de Avaliação */}
+            <View style={{ alignItems: 'center' }}>
+              <Text style={[styles.descriptionText, { color: theme.colors.onSurfaceVariant, marginBottom: 8 }]}>
+                Sua Avaliação:
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                  <Button
+                    key={star}
+                    mode="text"
+                    icon={star <= (char.rating || 0) ? 'star' : 'star-outline'}
+                    onPress={() => updateChar({ ...char, rating: star })}
+                    style={{ minWidth: 30 }}
+                  />
+                ))}
+              </View>
+              <Text style={[styles.descriptionText, { color: theme.colors.primary }]}>
+                {char.rating || 0}/10
+              </Text>
+            </View>
+          </View>
+        )}
 
 
        

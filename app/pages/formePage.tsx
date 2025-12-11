@@ -1,19 +1,24 @@
 
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Switch, ScrollView, ActivityIndicator, StyleSheet, ColorValue } from 'react-native';
-import { useSettingsStore } from '@app/hooks/useSettingsStore';
-import { ThemeContextProvider, useThemeToggle } from '@app/contexts/ThemeContext'; // Seu contexto de tema
+import { useGunStore } from '@app/hooks/useGunStore';
+import { useGunAuth } from '@app/hooks/useGunAuth';
+import { GunSettings } from '@app/pages/settings/GunSettings';
+import { ThemeContextProvider, useThemeToggle } from '@app/contexts/ThemeContext';
 import { AppTheme } from '@app/themes/themes';
-import { useTheme } from 'react-native-paper';
+import { useTheme, Button, Card, Chip } from 'react-native-paper';
 import ColorPicker from '@components/ui/ColorPicker';
+import { AuthModal } from '@app/components/AuthModal';
 
 
 export default function SettingsPage() {
-  const { settings, isLoading, isInitialized, initialize, updateSetting } = useSettingsStore();
+  const { settings, isLoading, isInitialized, initialize, updateSetting } = useGunStore();
+  const { isAuthenticated, username, logout, checkAuth } = useGunAuth();
   const { toggleTheme } = useThemeToggle();
   const theme = useTheme() as AppTheme; 
 
   const [currentColor, setCurrentColor] = useState<ColorValue>('#3357FF');
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleColorChange = (color: ColorValue) => {
     console.log('Nova cor selecionada:', color);
@@ -25,7 +30,8 @@ export default function SettingsPage() {
     if (!isInitialized) {
       initialize();
     }
-  }, [isInitialized, initialize]);
+    checkAuth(); // Verifica autenticação ao carregar
+  }, [isInitialized, initialize, checkAuth]);
 
   if (isLoading || !isInitialized) {
     return (
@@ -72,31 +78,6 @@ export default function SettingsPage() {
     <ScrollView style={styles.container}>
       <Text style={{color:theme.colors.secondary, fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>Configurações Gerais</Text>
 
-      {/* Campo: Name */}
-      <Text style={styles.label}>Nome do Usuário</Text>
-      <TextInput
-        style={styles.input}
-        value={settings.name}
-        onChangeText={(text) => handleTextChange('name', text)}
-        placeholder="Seu Nome" />
-
-      <Text style={styles.label}>URL da API</Text>
-      <TextInput
-        style={styles.input}
-        value={settings.API}
-        onChangeText={(text) => handleTextChange('API', text)}
-        placeholder="https://api.example.com/v1" />
-
-      <Text style={styles.label}>Token de Acesso</Text>
-      <TextInput
-        style={styles.input}
-        value={settings.Token}
-        onChangeText={(text) => handleTextChange('Token', text)}
-        placeholder="Token Secreto"
-        // placeholderTextColor={theme.colors.surface}
-        secureTextEntry />
-
-
       <Text style={styles.label}>Token Gemini</Text>
       <TextInput
         style={styles.input}
@@ -132,6 +113,68 @@ export default function SettingsPage() {
         onColorChange={(text)=>{  const newColors = JSON.stringify({ ...JSON.parse(settings.Colors), primary: text });
           handleTextChange('Colors', newColors);}}
         title="Escolha a Cor Principal"
+      />
+
+      {/* Seção Autenticação Gun.js */}
+      <View style={{ marginTop: 30 }}>
+        <Text style={{color:theme.colors.secondary, fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>
+          Conta Gun.js
+        </Text>
+        
+        <Card style={{ padding: 16, marginBottom: 16 }}>
+          {isAuthenticated ? (
+            <View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                <Chip 
+                  icon="account-check" 
+                  style={{ backgroundColor: theme.colors.primary }}
+                  textStyle={{ color: theme.colors.onPrimary }}
+                >
+                  Conectado como {username}
+                </Chip>
+              </View>
+              
+              <Text style={{ color: theme.colors.outline, marginBottom: 16 }}>
+                Seus dados estão sendo sincronizados de forma segura e criptografada.
+              </Text>
+              
+              <Button
+                mode="outlined"
+                onPress={logout}
+                icon="logout"
+              >
+                Sair da Conta
+              </Button>
+            </View>
+          ) : (
+            <View>
+              <Text style={{ color: theme.colors.outline, marginBottom: 16 }}>
+                Entre ou crie uma conta para sincronizar seus dados entre dispositivos de forma segura.
+              </Text>
+              
+              <Button
+                mode="contained"
+                onPress={() => setShowAuthModal(true)}
+                icon="account-plus"
+              >
+                Entrar / Criar Conta
+              </Button>
+            </View>
+          )}
+        </Card>
+      </View>
+
+      {/* Seção Gun.js */}
+      <View style={{ marginTop: 20 }}>
+        <Text style={{color:theme.colors.secondary, fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>
+          Sincronização Gun.js
+        </Text>
+        <GunSettings />
+      </View>
+
+      <AuthModal 
+        visible={showAuthModal}
+        onDismiss={() => setShowAuthModal(false)}
       />
 
     </ScrollView>

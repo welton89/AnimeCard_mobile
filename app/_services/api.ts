@@ -1,17 +1,17 @@
 //Api.ts
 import type { Anime, Character } from "./types";
-import { waitForSettingsInitialization } from '@app/hooks/useSettingsStore';
+import { waitForGunInitialization } from '@app/hooks/useGunStore';
 
 // const CONFIG_STORAGE_KEY = 'app_config';
 const DEFAULT_PATH_ANIME = 'animes';
 const DEFAULT_PATH_CHARACTER = 'personagens';
 
 async function getConfig() {
-  const settings = await waitForSettingsInitialization(); 
+  // API externa removida - Gun.js é usado para sincronização
   const Config = {
-    URL_BASE: settings.API, 
-    TOKEN: settings.Token, 
-    NOME: settings.name,
+    URL_BASE: '', 
+    TOKEN: '', 
+    NOME: 'Gun.js User',
   }
 
   return Config;

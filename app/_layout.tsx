@@ -5,13 +5,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { Stack } from 'expo-router';
 import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message';
-import { useSettingsStore } from '@app/hooks/useSettingsStore';
+import { useGunStore } from '@app/hooks/useGunStore';
 
-import { DataProvider } from '@app/_services/DataContext';
+import { GunDataProvider } from '@app/_services/GunDataContext';
 import { ThemeContextProvider } from '@app/contexts/ThemeContext';
 
 export default function App() {
-      const { isInitialized, initialize } = useSettingsStore();
+      const { isInitialized, initialize } = useGunStore();
       useEffect(() => {
         if (!isInitialized) {
           initialize();
@@ -23,7 +23,7 @@ export default function App() {
     <SafeAreaProvider>
         <PaperProvider> 
             <ThemeContextProvider> 
-                 <DataProvider>
+                 <GunDataProvider>
                     <Stack >
                         <Stack.Screen 
                           name="index" 
@@ -64,7 +64,7 @@ export default function App() {
 
                     </Stack>
                     <StatusBar hidden={false} />
-                 </DataProvider>
+                 </GunDataProvider>
             </ThemeContextProvider>
         </PaperProvider>
     </SafeAreaProvider>

@@ -6,7 +6,7 @@ import { router } from 'expo-router'; //
    
 
 import { Character, Anime } from '@app/_services/types';; 
-import { useData } from '@app/_services/DataContext';; 
+import { useGunData } from '@app/_services/GunDataContext'; 
 import { ImageCarousel } from './ImageCarrousel'; 
 import { AppTheme } from '@app/themes/themes';
 
@@ -19,7 +19,7 @@ interface ItemCardProps {
 
 
 export function ItemCard({ item }: ItemCardProps) {
-  const { animes, characters } = useData();
+  const { animes, characters } = useGunData();
   const theme = useTheme() as AppTheme; 
  
   const isAnime = 'animeId' in item ? false : true;
@@ -29,25 +29,25 @@ export function ItemCard({ item }: ItemCardProps) {
         const char = item as Character;
         return c.id.toString() === char.animeId.toString();
     });
-  const animeImg = anime == undefined ? [] : anime?.images.split("\n").filter((uri) => uri.trim() !== "");
-  const imageUris = item.images == null ? [] : item.images.split("\n").filter((uri) => uri.trim() !== "") || ''
+  const animeImg = anime?.images ? anime.images.split("\n").filter((uri) => uri.trim() !== "") : [];
+  const imageUris = item.images ? item.images.split("\n").filter((uri) => uri.trim() !== "") : [];
 
 
 
   const renderAvatar = () => {
-    if (isAnime || !animeImg || animeImg.length === 0) {
+    if (isAnime || !animeImg || animeImg.length === 0 || !anime?.id) {
       return null;
     }
     return (
       <TouchableOpacity
-      onPress={()=>{router.push(`/pages/animes/animeDetail/${anime?.id}`)}}
+        onPress={() => {router.push(`/pages/animes/animeDetail/${anime.id}`)}}
       >
-      <Avatar.Image
-        size={40} // Tamanho fixo para o avatar
-        source={{ uri: animeImg[0] }}
-        style={{ backgroundColor: theme.colors.surfaceDisabled }}
+        <Avatar.Image
+          size={40} // Tamanho fixo para o avatar
+          source={{ uri: animeImg[0] }}
+          style={{ backgroundColor: theme.colors.surfaceDisabled }}
         />
-        </TouchableOpacity>
+      </TouchableOpacity>
     );
   };
 
@@ -131,15 +131,13 @@ export function ItemCard({ item }: ItemCardProps) {
       <View style={styles.headerContainer}>
         <Card.Title
           title={
-
-            animes.find(a => a.id.toString() === item.id.toString())?.name 
+            animes.find(a => a.id?.toString() === item.id?.toString())?.name 
             ||
-            characters.find(c => c.id.toString() === item.id.toString())?.name
-            
-            // item.name
-          
+            characters.find(c => c.id?.toString() === item.id?.toString())?.name
+            ||
+            'Nome não disponível'
           }
-          subtitle={anime?.name || ''}
+          subtitle={anime?.name || undefined}
           left={renderAvatar}
           titleStyle={styles.title}
           subtitleStyle={styles.subTitle}
@@ -153,26 +151,62 @@ export function ItemCard({ item }: ItemCardProps) {
       {/* 5. CardContent (Descrição) */}
       <Card.Content style={styles.cardContent}>
         <Text variant="bodyMedium" numberOfLines={3} style={styles.cardDescription}>
-          {item.description}
+          {item.description || 'Descrição não disponível'}
         </Text>
       </Card.Content>
       <Card.Actions style={styles.cardActions}>
-{isAnime ?
-        <Text variant="bodyLarge" style={styles.cardDescription}>
-          {(item as Anime).status == 'list' ? 'Na Lista' : (item as Anime).status == 'watching' ? 'Assistindo' : 'Finalizado'}
-        </Text>
-: 
-
- <IconButton 
-          icon={ "youtube-tv"} 
-          disabled={true}
-          onPress={() => {  }} 
-          style={styles.icons} 
-          size={30} 
-        />  
-
-
-}
+{isAnime ? (
+  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+    <Text variant="bodyLarge" style={styles.cardDescription}>
+      {(item as Anime).status === 'list' ? 'Na Lista' : 
+       (item as Anime).status === 'watching' ? 'Assistindo' : 
+       (item as Anime).status === 'completed' ? 'Finalizado' :
+       (item as Anime).status === 'dropped' ? 'Dropado' : 'Sem Status'}
+    </Text>
+    
+    {/* Progresso de episódios */}
+    {(item as Anime).currentEpisode && (item as Anime).totalEpisodes && (
+      <Text variant="bodySmall" style={{ marginLeft: 8, color: theme.colors.outline }}>
+        {(item as Anime).currentEpisode || 0}/{(item as Anime).totalEpisodes || 0} eps
+      </Text>
+    )}
+    
+    {/* Rating */}
+    {(item as Anime).rating && (
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+        <IconButton icon="star" size={16} />
+        <Text variant="bodySmall">{(item as Anime).rating || 0}/10</Text>
+      </View>
+    )}
+  </View>
+) : (
+  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+    <IconButton 
+      icon="youtube-tv" 
+      disabled={true}
+      onPress={() => {}} 
+      style={styles.icons} 
+      size={30} 
+    />
+    
+    {/* Favorito */}
+    {(item as Character).favorite && (
+      <IconButton 
+        icon="heart" 
+        iconColor={theme.colors.error}
+        size={20} 
+      />
+    )}
+    
+    {/* Rating do personagem */}
+    {(item as Character).rating && (
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+        <IconButton icon="star" size={16} />
+        <Text variant="bodySmall">{(item as Character).rating || 0}/10</Text>
+      </View>
+    )}
+  </View>
+)}
         {/* <Text variant="bodyLarge" style={styles.cardDescription}>
           {anime?.status == 'list' ? 'Na Lista' : anime?.status == 'watching' ? 'Assistindo' : 'Finalizado'}
         </Text>
