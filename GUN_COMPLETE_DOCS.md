@@ -376,7 +376,16 @@ gun.user().auth('username', 'password', (ack) => {
   }
 });
 
-// Check if user is authenticated
+// Check if user is authenticated with sessionStorage
+gun.user().recall({ sessionStorage: true }, (ack) => {
+  if (ack.err) {
+    console.log('Not authenticated');
+  } else {
+    console.log('User is authenticated:', gun.user().is);
+  }
+});
+
+// Alternative: Simple recall (may not persist across sessions)
 gun.user().recall((ack) => {
   if (ack.err) {
     console.log('Not authenticated');
@@ -810,3 +819,510 @@ const gun = Gun({
 ---
 
 *This documentation covers the essential concepts and APIs of Gun.js. For the most up-to-date information, always refer to the official documentation at gun.eco*
+---
+
+
+## React Native Integration
+
+### Official React Native Example
+
+Based on the official Gun.js repository example for React Native integration:
+
+```javascript
+import * as React from 'react';
+import {View, StyleSheet, TextInput, Text, TouchableOpacity, AsyncStorage} from 'react-native';
+import Gun from 'gun/gun';
+import 'gun/lib/open';
+import '../extensions/sea';
+import adapter from '../extensions/asyncStorageAdapter';
+
+// Register AsyncStorage adapter
+Gun.on('create', function(db) {
+  this.to.next(db);
+  
+  const pluginInterop = function(middleware) {
+    return function(request) {
+      this.to.next(request);
+      return middleware(request, db);
+    };
+  };
+
+  // Register the adapter for read/write operations
+  db.on('get', pluginInterop(adapter.read));
+  db.on('put', pluginInterop(adapter.write));
+});
+
+export class Demo extends React.Component {
+  constructor() {
+    super();
+    this.gun = new Gun();
+    this.user = this.gun.user();
+    
+    // Global access for debugging
+    window.gun = this.gun;
+    window.user = this.user;
+    
+    this.state = {
+      authenticated: false,
+      list: [],
+      listText: '',
+      username: '',
+      password: '',
+    };
+  }
+
+  // Hook into user's list with real-time updates
+  hookUserList = () => {
+    this.user.get('list').open((list) => {
+      const userList = Object.keys(list).reduce((newList, key) => {
+        if (!!Object.keys(list[key]).length) {
+          return [...newList, {text: list[key].text, key}];
+        }
+      }, []);
+      
+      this.setState({
+        list: userList || [],
+      });
+    });
+  }
+
+  addToList = () => {
+    this.user.get('list').set({text: this.state.listText});
+  }
+
+  doSignin = () => {
+    this.user.auth(this.state.username, this.state.password, (d) => {
+      if (d.err) {
+        console.log('Authentication error:', d.err);
+        return;
+      }
+      
+      this.setState({authenticated: true});
+      this.hookUserList();
+    });
+  }
+
+  doSignup = () => {
+    this.user.create(this.state.username, this.state.password, () => {
+      this.doSignin();
+    });
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        {this.state.authenticated ? 
+          this.userListScreen() : 
+          this.loginScreen()
+        }
+      </View>
+    );
+  }
+}
+```
+
+### Key React Native Concepts
+
+#### 1. **AsyncStorage Adapter**
+Gun.js requires a custom adapter to work with React Native's AsyncStorage:
+
+```javascript
+// asyncStorageAdapter.js
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const adapter = {
+  read: async (request, db) => {
+    const key = request.get;
+    try {
+      const data = await AsyncStorage.getItem(key);
+      return data ? JSON.parse(data) : undefined;
+    } catch (error) {
+      console.error('AsyncStorage read error:', error);
+      return undefined;
+    }
+  },
+
+  write: async (request, db) => {
+    const key = request.put;
+    const data = request.put;
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(data));
+      return true;
+    } catch (error) {
+      console.error('AsyncStorage write error:', error);
+      return false;
+    }
+  }
+};
+
+export default adapter;
+```
+
+#### 2. **Plugin Registration**
+Register the AsyncStorage adapter using Gun's plugin system:
+
+```javascript
+Gun.on('create', function(db) {
+  this.to.next(db);
+  
+  const pluginInterop = function(middleware) {
+    return function(request) {
+      this.to.next(request);
+      return middleware(request, db);
+    };
+  };
+
+  // Register read/write operations
+  db.on('get', pluginInterop(adapter.read));
+  db.on('put', pluginInterop(adapter.write));
+});
+```
+
+#### 3. **Real-time Data Binding**
+Use `.on()` for real-time updates (official API):
+
+```javascript
+// Real-time list updates with .map().on()
+this.user.get('list').map().on((item, key) => {
+  if (item) {
+    // Update state with new item
+    this.setState(prevState => ({
+      list: [...prevState.list.filter(l => l.key !== key), {text: item.text, key}]
+    }));
+  }
+});
+
+// Alternative: Direct object listening
+this.user.get('profile').on((profile) => {
+  if (profile) {
+    this.setState({profile});
+  }
+});
+```
+
+**Note**: `.open()` appears in some examples but is not part of the core API. Use `.on()` for reliable real-time updates.
+
+#### 4. **Authentication Flow**
+Proper authentication handling for React Native:
+
+```javascript
+// Create user
+this.user.create(username, password, (ack) => {
+  if (ack.err) {
+    console.log('Create error:', ack.err);
+    return;
+  }
+  // Auto-login after creation
+  this.doSignin();
+});
+
+// Login user
+this.user.auth(username, password, (ack) => {
+  if (ack.err) {
+    console.log('Auth error:', ack.err);
+    return;
+  }
+  
+  this.setState({authenticated: true});
+  this.hookUserList();
+});
+```
+
+### React Native Best Practices
+
+#### 1. **Import Structure**
+```javascript
+import Gun from 'gun/gun';           // Core Gun
+import 'gun/lib/open';              // Real-time updates
+import 'gun/sea';                   // Authentication
+import adapter from './asyncStorageAdapter';
+```
+
+#### 2. **Component Integration**
+```javascript
+class MyComponent extends React.Component {
+  constructor() {
+    super();
+    this.gun = new Gun();
+    this.user = this.gun.user();
+  }
+
+  componentDidMount() {
+    // Setup real-time listeners
+    this.setupGunListeners();
+  }
+
+  componentWillUnmount() {
+    // Cleanup listeners
+    this.gun.off();
+  }
+}
+```
+
+#### 3. **State Management**
+```javascript
+// Use React state for UI updates
+hookUserData = () => {
+  this.user.get('profile').open((profile) => {
+    this.setState({profile});
+  });
+}
+
+// Update data through Gun
+updateProfile = (newData) => {
+  this.user.get('profile').put(newData);
+  // State will update automatically via .open()
+}
+```
+
+#### 4. **Error Handling**
+```javascript
+// Always handle Gun errors
+this.user.auth(username, password, (ack) => {
+  if (ack.err) {
+    // Handle specific errors
+    if (ack.err.includes('Wrong user or password')) {
+      this.setState({error: 'Invalid credentials'});
+    } else if (ack.err.includes('User not found')) {
+      this.setState({error: 'User does not exist'});
+    }
+    return;
+  }
+  
+  // Success handling
+  this.setState({authenticated: true, error: null});
+});
+```
+
+### React Native Configuration
+
+#### 1. **Metro Configuration**
+Add to `metro.config.js`:
+
+```javascript
+module.exports = {
+  resolver: {
+    alias: {
+      'gun': 'gun/gun.js',
+    },
+  },
+};
+```
+
+#### 2. **Package Dependencies**
+```json
+{
+  "dependencies": {
+    "gun": "^0.2020.1241",
+    "@react-native-async-storage/async-storage": "^1.19.0"
+  }
+}
+```
+
+#### 3. **Android Permissions**
+Add to `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+```
+
+### Common React Native Issues
+
+#### 1. **Metro Bundler Issues**
+```bash
+# Clear Metro cache
+npx react-native start --reset-cache
+
+# Or for Expo
+expo start -c
+```
+
+#### 2. **AsyncStorage Deprecation**
+Use `@react-native-async-storage/async-storage` instead of deprecated `AsyncStorage`:
+
+```javascript
+// Old (deprecated)
+import {AsyncStorage} from 'react-native';
+
+// New (recommended)
+import AsyncStorage from '@react-native-async-storage/async-storage';
+```
+
+#### 3. **WebSocket Issues**
+For React Native, ensure WebSocket support:
+
+```javascript
+// Add to index.js or App.js
+import 'react-native-get-random-values';
+
+// For older RN versions
+global.WebSocket = global.WebSocket || require('ws');
+```
+
+### Performance Optimization
+
+#### 1. **Lazy Loading**
+```javascript
+// Load Gun.js lazily
+const initGun = async () => {
+  const Gun = await import('gun/gun');
+  await import('gun/sea');
+  return new Gun();
+};
+```
+
+#### 2. **Memory Management**
+```javascript
+componentWillUnmount() {
+  // Always cleanup Gun listeners
+  if (this.gun) {
+    this.gun.off();
+  }
+}
+```
+
+#### 3. **Batch Operations**
+```javascript
+// Batch multiple updates
+const updates = {
+  name: 'John',
+  age: 30,
+  email: 'john@example.com'
+};
+
+this.user.get('profile').put(updates);
+```
+
+---
+### User.
+recall
+
+Recall saves a user's credentials in sessionStorage of the browser. As long as the tab of your app is not closed the user stays logged in, even through page refreshes and reloads.
+
+```javascript
+var gun = Gun(); 
+var user = gun.user().recall({sessionStorage: true});
+```
+
+#### Syntax
+```javascript
+user.recall(opt, cb)
+```
+
+#### Parameters
+- **opt** (object) - option object
+  ```javascript
+  {
+    sessionStorage: true // use the browser storage to keep credentials
+  }
+  ```
+- **cb** (function) - callback function
+
+#### Example Usage
+```javascript
+// Initialize Gun and user
+var gun = Gun();
+var user = gun.user();
+
+// Recall with sessionStorage for persistence
+user.recall({ sessionStorage: true }, (ack) => {
+  if (ack.err) {
+    console.log('No saved session found');
+    // Show login form
+  } else {
+    console.log('User session restored:', user.is);
+    // User is logged in, update UI
+  }
+});
+```
+
+#### Best Practices
+1. **Always call on app initialization** to restore user sessions
+2. **Use sessionStorage: true** for proper persistence
+3. **Handle both success and error cases** in the callback
+4. **Update UI state** based on authentication status
+
+#### React Native Considerations
+For React Native, the sessionStorage option works with the AsyncStorage adapter:
+
+```javascript
+// In React Native with AsyncStorage adapter
+gun.user().recall({ sessionStorage: true }, (ack) => {
+  if (ack.err) {
+    console.log('No session in AsyncStorage');
+  } else {
+    console.log('Session restored from AsyncStorage');
+  }
+});
+```
+### User.is
+
+To check if you are currently logged in:
+
+```javascript
+if (user.is) {
+    console.log('You are logged in');
+} else {
+    console.log('You are not logged in');
+}
+```
+
+If the user is not logged in it will return `undefined`.
+
+#### Example Usage
+```javascript
+var gun = Gun();
+var user = gun.user();
+
+// Check authentication status
+if (user.is) {
+    console.log('User is authenticated:', user.is.alias);
+    console.log('User public key:', user.is.pub);
+} else {
+    console.log('User is not authenticated');
+    // Show login form
+}
+```
+
+#### Properties Available When Authenticated
+When `user.is` returns a truthy value, it contains:
+- `alias` - The username
+- `pub` - Public key
+- `epub` - Encrypted public key
+
+#### React Example
+```javascript
+function AuthStatus() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [username, setUsername] = useState('');
+    
+    useEffect(() => {
+        const checkAuth = () => {
+            if (gun.user().is) {
+                setIsLoggedIn(true);
+                setUsername(gun.user().is.alias);
+            } else {
+                setIsLoggedIn(false);
+                setUsername('');
+            }
+        };
+        
+        checkAuth();
+        
+        // Check periodically or on events
+        const interval = setInterval(checkAuth, 1000);
+        return () => clearInterval(interval);
+    }, []);
+    
+    return (
+        <div>
+            {isLoggedIn ? (
+                <p>Welcome, {username}!</p>
+            ) : (
+                <p>Please log in</p>
+            )}
+        </div>
+    );
+}
+```

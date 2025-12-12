@@ -1,3 +1,5 @@
+// Seguindo EXATAMENTE o exemplo oficial do Gun.js para React Native
+import 'react-native-get-random-values';
 
 import React, { useEffect } from 'react';
 import { StatusBar } from 'react-native';
@@ -9,6 +11,7 @@ import { useGunStore } from '@app/hooks/useGunStore';
 
 import { GunDataProvider } from '@app/_services/GunDataContext';
 import { ThemeContextProvider } from '@app/contexts/ThemeContext';
+import PolyfillCrypto from '@app/components/PolyfillCrypto';
 
 export default function App() {
       const { isInitialized, initialize } = useGunStore();
@@ -19,7 +22,7 @@ export default function App() {
       }, [isInitialized, initialize]);
    return (
   <>
-  
+    <PolyfillCrypto />
     <SafeAreaProvider>
         <PaperProvider> 
             <ThemeContextProvider> 

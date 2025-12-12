@@ -78,31 +78,36 @@ export const useGunAuth = create<AuthState>((set, get) => ({
 
   checkAuth: async () => {
     try {
-      console.log('🔍 Verificando autenticação...');
+      console.log('🔍 INICIANDO VERIFICAÇÃO DE AUTENTICAÇÃO...');
       
-      // Primeiro verifica se já está autenticado
-      if (gunService.isUserAuthenticated()) {
-        const username = gunService.getCurrentUsername();
-        console.log('✅ Usuário já autenticado:', username);
-        set({ 
-          isAuthenticated: true,
-          username: username
+      // Verifica se user.is existe
+      const userIs = gunService.getCurrentUser();
+      console.log('👤 USER.IS:', !!userIs);
+      
+      if (userIs) {
+        console.log('📊 DADOS USER.IS:', {
+          hasAlias: !!userIs.alias,
+          alias: userIs.alias?.substring(0, 20) + '...',
+          hasPub: !!userIs.pub
         });
-        return;
       }
-
-      // Tenta restaurar sessão
-      const isAuth = await gunService.recallUser();
-      const username = gunService.getCurrentUsername();
       
-      console.log('🔐 Resultado da verificação:', { isAuth, username });
+      // Verifica estado de autenticação
+      const isAuth = gunService.isUserAuthenticated();
+      console.log('🔐 IS_AUTHENTICATED:', isAuth);
+      
+      // Busca username
+      const username = await gunService.getCurrentUsernameAsync();
+      console.log('👤 USERNAME_ASYNC:', username);
+      
+      console.log('📊 RESULTADO FINAL:', { isAuth, username });
       
       set({ 
         isAuthenticated: isAuth,
         username: username
       });
     } catch (error) {
-      console.warn('❌ Erro ao verificar autenticação:', error);
+      console.error('❌ Erro ao verificar autenticação:', error);
       set({ 
         isAuthenticated: false,
         username: null

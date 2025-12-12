@@ -56,53 +56,41 @@ export function GunDataProvider({ children }: { children: React.ReactNode }) {
       setAnimes(prev => prev || []);
       setCharacters(prev => prev || []);
       
-      // 1. Carrega dados do cache AsyncStorage primeiro (rápido)
-      const [cachedAnimes, cachedCharacters] = await Promise.all([
-        StorageService.getItem<Anime[]>('gun_animes_cache').then(data => data || []).catch(() => []),
-        StorageService.getItem<Character[]>('gun_characters_cache').then(data => data || []).catch(() => [])
-      ]);
+      // Carrega dados diretamente do Gun.js (que já persiste automaticamente)
+      console.log('🔄 Carregando dados do Gun.js...');
       
-      // Sempre define os arrays, mesmo se vazios
-      setAnimes(cachedAnimes || []);
-      setCharacters(cachedCharacters || []);
-      
-      if (cachedAnimes.length > 0 || cachedCharacters.length > 0) {
-        setLoading(false); // Para de carregar se há dados
-        console.log('Dados carregados do cache local');
-      }
-      
-      // 2. Tenta carregar do Gun.js em background (pode demorar)
       try {
         const [gunAnimesData, gunCharactersData] = await Promise.all([
           gunAnimeRepository.getAll(),
           gunCharacterRepository.getAll(),
         ]);
         
-        // Valida e atualiza se houver dados diferentes
-        if (gunAnimesData.length > 0 || gunCharactersData.length > 0) {
-          // Valida dados dos animes
-          const validAnimes = gunAnimesData.filter(anime => 
-            anime && 
-            anime.id && 
-            anime.name && 
-            typeof anime.images === 'string'
-          );
-          
-          // Valida dados dos personagens
-          const validCharacters = gunCharactersData.filter(char => 
-            char && 
-            char.id && 
-            char.name && 
-            typeof char.images === 'string' &&
-            char.animeId
-          );
-          
-          setAnimes(validAnimes);
-          setCharacters(validCharacters);
-          console.log('Dados validados e atualizados do Gun.js');
-        }
+        // Valida dados dos animes
+        const validAnimes = gunAnimesData.filter(anime => 
+          anime && 
+          anime.id && 
+          anime.name && 
+          typeof anime.images === 'string'
+        );
+        
+        // Valida dados dos personagens
+        const validCharacters = gunCharactersData.filter(char => 
+          char && 
+          char.id && 
+          char.name && 
+          typeof char.images === 'string' &&
+          char.animeId
+        );
+        
+        setAnimes(validAnimes);
+        setCharacters(validCharacters);
+        console.log(`✅ Carregados: ${validAnimes.length} animes, ${validCharacters.length} personagens`);
+        
       } catch (gunError) {
-        console.warn('Gun.js ainda não disponível, usando cache:', gunError);
+        console.warn('❌ Erro ao carregar do Gun.js:', gunError);
+        // Define arrays vazios em caso de erro
+        setAnimes([]);
+        setCharacters([]);
       }
       
       // 3. API externa removida - Gun.js é usado para sincronização P2P
@@ -121,13 +109,13 @@ export function GunDataProvider({ children }: { children: React.ReactNode }) {
       // 1. Carrega dados imediatamente do cache
       fetchData();
       
-      // 2. Inicializa Gun.js e aguarda
+      // 2. Inicializa Gun.js (que já faz recall automático)
       await initialize();
       
-      // 3. Aguarda Gun.js e SEA se estabilizarem completamente
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // 3. Aguarda processamento completo
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 4. Verifica autenticação após Gun.js estar pronto
+      // 4. Atualiza estado da autenticação (Gun.js já fez recall)
       await checkAuth();
       
       console.log('🎉 Inicialização completa do app');

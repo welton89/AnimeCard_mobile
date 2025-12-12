@@ -17,12 +17,7 @@ export class GunAnimeRepository {
       const animes: Anime[] = [];
       const processedKeys = new Set();
       
-      // Primeiro tenta carregar do AsyncStorage
-      StorageService.getItem<Anime[]>('gun_animes_cache').then(cachedAnimes => {
-        if (cachedAnimes && cachedAnimes.length > 0) {
-          resolve(cachedAnimes);
-        }
-      });
+      console.log('🔍 Carregando animes do Gun.js...');
 
       this.animesRef.map().on((data: any, key: string) => {
         if (data && data !== null && !processedKeys.has(key)) {
@@ -38,16 +33,15 @@ export class GunAnimeRepository {
           };
           
           animes.push(validatedAnime);
-          
-          // Atualiza cache
-          StorageService.setItem('gun_animes_cache', animes);
+          console.log('📥 Anime carregado:', validatedAnime.name);
         }
       });
 
-      // Aguarda um tempo para coletar dados
+      // Gun.js é offline-first, aguarda dados locais primeiro
       setTimeout(() => {
-        resolve(animes); // Resolve mesmo se vazio
-      }, 300); // Timeout menor
+        console.log(`✅ ${animes.length} animes carregados do Gun.js`);
+        resolve(animes);
+      }, 1000); // Tempo para Gun.js carregar dados locais
     });
   }
 
@@ -59,27 +53,20 @@ export class GunAnimeRepository {
       createdAt: anime.createdAt || timestamp
     };
 
-    try {
-      // 1. Salva no AsyncStorage primeiro (sempre funciona)
-      await this.updateCache('animes', anime.id, animeData);
-      console.log('Anime salvo no cache local:', anime.name);
-
-      // 2. Tenta salvar no Gun.js em background (não bloqueia)
+    return new Promise((resolve, reject) => {
+      console.log('💾 Salvando anime no Gun.js:', anime.name);
+      
+      // Salva APENAS no Gun.js - ele já persiste automaticamente
       this.animesRef.get(anime.id).put(animeData, (ack: any) => {
         if (ack.err) {
-          console.warn('Falha ao salvar no Gun.js:', ack.err);
+          console.error('❌ Erro ao salvar no Gun.js:', ack.err);
+          reject(new Error(ack.err));
         } else {
-          console.log('Anime sincronizado com Gun.js:', anime.name);
+          console.log('✅ Anime salvo e persistido pelo Gun.js:', anime.name);
+          resolve();
         }
       });
-
-      // Resolve imediatamente após salvar no cache
-      return Promise.resolve();
-      
-    } catch (error) {
-      console.error('Erro ao salvar anime:', error);
-      throw error;
-    }
+    });
   }
 
   async get(id: string): Promise<Anime | null> {
@@ -192,12 +179,7 @@ export class GunCharacterRepository {
       const characters: Character[] = [];
       const processedKeys = new Set();
       
-      // Primeiro tenta carregar do AsyncStorage
-      StorageService.getItem<Character[]>('gun_characters_cache').then(cachedChars => {
-        if (cachedChars && cachedChars.length > 0) {
-          resolve(cachedChars);
-        }
-      });
+      console.log('🔍 Carregando personagens do Gun.js...');
 
       this.charactersRef.map().on((data: any, key: string) => {
         if (data && data !== null && !processedKeys.has(key)) {
@@ -214,15 +196,15 @@ export class GunCharacterRepository {
           };
           
           characters.push(validatedCharacter);
-          
-          // Atualiza cache
-          StorageService.setItem('gun_characters_cache', characters);
+          console.log('📥 Personagem carregado:', validatedCharacter.name);
         }
       });
 
+      // Gun.js é offline-first, aguarda dados locais primeiro
       setTimeout(() => {
-        resolve(characters); // Resolve mesmo se vazio
-      }, 300); // Timeout menor
+        console.log(`✅ ${characters.length} personagens carregados do Gun.js`);
+        resolve(characters);
+      }, 1000); // Tempo para Gun.js carregar dados locais
     });
   }
 
@@ -234,28 +216,20 @@ export class GunCharacterRepository {
       createdAt: character.createdAt || timestamp
     };
 
-    try {
-      // 1. Salva no AsyncStorage primeiro (sempre funciona)
-      const animeRepo = new GunAnimeRepository();
-      await animeRepo['updateCache']('characters', character.id, characterData);
-      console.log('Personagem salvo no cache local:', character.name);
-
-      // 2. Tenta salvar no Gun.js em background (não bloqueia)
+    return new Promise((resolve, reject) => {
+      console.log('💾 Salvando personagem no Gun.js:', character.name);
+      
+      // Salva APENAS no Gun.js - ele já persiste automaticamente
       this.charactersRef.get(character.id).put(characterData, (ack: any) => {
         if (ack.err) {
-          console.warn('Falha ao salvar no Gun.js:', ack.err);
+          console.error('❌ Erro ao salvar no Gun.js:', ack.err);
+          reject(new Error(ack.err));
         } else {
-          console.log('Personagem sincronizado com Gun.js:', character.name);
+          console.log('✅ Personagem salvo e persistido pelo Gun.js:', character.name);
+          resolve();
         }
       });
-
-      // Resolve imediatamente após salvar no cache
-      return Promise.resolve();
-      
-    } catch (error) {
-      console.error('Erro ao salvar personagem:', error);
-      throw error;
-    }
+    });
   }
 
   async get(id: string): Promise<Character | null> {
